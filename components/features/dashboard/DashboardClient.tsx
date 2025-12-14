@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { SidePanel } from "@/components/ui/SidePanel";
 import WorkoutLogger from "@/components/features/workout/WorkoutLogger";
-import CoachWidget from "@/components/features/coach/CoachWidget";
 import { Header } from "@/components/layout/Header";
 import { Plus } from "lucide-react";
 import { SyncButton } from "@/app/dashboard/SyncButton";
@@ -18,17 +17,26 @@ export default function DashboardClient({ children }: { children: React.ReactNod
                 <div className="mx-auto flex max-w-5xl items-center justify-between">
                     <span className="text-xl font-bold tracking-tight text-white">AG-FIT</span>
 
-                    <div className="flex items-center gap-2">
-                        <SyncButton />
-                        <button
-                            onClick={() => setIsLogOpen(true)}
-                            className="flex items-center gap-1 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-background transition-transform hover:scale-105 active:scale-95"
-                        >
-                            <Plus size={16} />
-                            Log
-                        </button>
+                    <div className="flex items-center gap-4">
+                        <nav className="hidden md:flex items-center gap-4 text-sm font-medium text-slate-400">
+                            <a href="/dashboard" className="hover:text-white transition-colors">Timeline</a>
+                            <a href="/dashboard/planner" className="hover:text-white transition-colors">Plan</a>
+                            <a href="/dashboard/analysis" className="hover:text-white transition-colors text-primary">Stats</a>
+                            <a href="/dashboard/coach" className="hover:text-white transition-colors">Coach</a>
+                        </nav>
+                        <div className="flex items-center gap-2">
+                            <SyncButton />
+                            <button
+                                onClick={() => setIsLogOpen(true)}
+                                className="flex items-center gap-1 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-background transition-transform hover:scale-105 active:scale-95"
+                            >
+                                <Plus size={16} />
+                                Log
+                            </button>
+                        </div>
                     </div>
                 </div>
+
             </div>
 
             <main className="mx-auto max-w-5xl px-4 py-6">
@@ -50,8 +58,6 @@ export default function DashboardClient({ children }: { children: React.ReactNod
                 />
             </SidePanel>
 
-            {/* Floating Coach */}
-            <CoachWidget />
         </div>
     );
 }

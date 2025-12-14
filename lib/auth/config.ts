@@ -19,8 +19,11 @@ export const authOptions: NextAuthOptions = {
     callbacks: {
         async session({ session, token }) {
             if (session?.user) {
-                // @ts-ignore - We want to pass the access token to the client for API calls
+                // @ts-ignore
                 session.accessToken = token.accessToken;
+                if (token.sub) {
+                    (session.user as any).id = token.sub;
+                }
             }
             return session;
         },

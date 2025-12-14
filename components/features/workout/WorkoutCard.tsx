@@ -41,7 +41,7 @@ export function WorkoutCard({ workout }: WorkoutCardProps) {
                         <h3 className="font-semibold text-white">
                             {workout.title || (workout.type === "bft" ? "BFT Class" : "Workout")}
                         </h3>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-slate-400" suppressHydrationWarning>
                             {format(new Date(workout.date), "EEE, MMM d • h:mm a")}
                         </p>
                     </div>

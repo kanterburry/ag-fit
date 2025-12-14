@@ -1,0 +1,34 @@
+
+name: Garmin Sync
+
+on:
+  schedule:
+    - cron: '*/15 * * * *' # Run every 15 minutes
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        
+    - name: Run Garmin Bridge
+      env:
+        GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }} # Fallback/Initial User
+        GARMIN_PASS: ${{ secrets.GARMIN_PASS }}   # Fallback
+        GARMIN_TOKENS: ${{ secrets.GARMIN_TOKENS }} # The Magic Token
+        NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+        SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        USER_ID: ${{ secrets.USER_ID }}
+      run: python scripts/garmin_bridge.py

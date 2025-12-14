@@ -38,5 +38,20 @@ CREATE TABLE IF NOT EXISTS benchmarks (
 );
 
 -- Create indexes
-CREATE INDEX IF NOT EXISTS idx_workouts_user_date ON workouts(user_id, date);
 CREATE INDEX IF NOT EXISTS idx_exercises_workout_id ON exercises(workout_id);
+
+-- Push Subscriptions (For Nudge Engine)
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  endpoint TEXT NOT NULL,
+  p256dh TEXT NOT NULL,
+  auth TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(user_id, endpoint)
+);
+
+-- Add notification flag to workouts if it doesn't exist
+-- Note: User must run this manually or we use a migration tool. 
+-- For schema.sql reference:
+-- ALTER TABLE workouts ADD COLUMN IF NOT EXISTS notification_sent BOOLEAN DEFAULT FALSE;

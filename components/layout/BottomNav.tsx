@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Dumbbell, Bot } from "lucide-react";
+import { Home, Dumbbell, Bot, PieChart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function BottomNav() {
@@ -23,6 +23,11 @@ export function BottomNav() {
             href: "/dashboard/coach",
             label: "Coach",
             icon: Bot,
+        },
+        {
+            href: "/dashboard/analysis",
+            label: "Stats",
+            icon: PieChart,
         },
     ];
 

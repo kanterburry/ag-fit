@@ -1,9 +1,18 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { X, Home, Dumbbell, Bot, Settings, PieChart, Calendar } from "lucide-react";
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+
+const links = [
+    { href: "/dashboard", label: "Timeline", icon: Home },
+    { href: "/dashboard/planner", label: "Plan", icon: Calendar },
+    { href: "/dashboard/log", label: "Log Workout", icon: Dumbbell },
+    { href: "/dashboard/coach", label: "AI Coach", icon: Bot },
+    { href: "/dashboard/analysis", label: "Stats", icon: PieChart },
+    { href: "/dashboard/settings", label: "Settings", icon: Settings },
+];
 
 interface SidePanelProps {
     isOpen: boolean;

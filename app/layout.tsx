@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import { Header } from "@/components/layout/Header";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import CoachWidget from "@/components/features/coach/CoachWidget";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -34,6 +35,7 @@ export default function RootLayout({
         <AuthProvider>
           <Header />
           <main className="min-h-screen pb-20 md:pb-0">{children}</main>
+          <CoachWidget />
         </AuthProvider>
       </body>
     </html>
