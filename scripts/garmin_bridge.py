@@ -37,23 +37,34 @@ def sync_garmin_data():
         import json
         import shutil
 
-        # Determine token directory (default for garminconnect is ~/.garminconnect)
-        token_dir = os.path.expanduser("~/.garminconnect")
-        if not os.path.exists(token_dir):
-            os.makedirs(token_dir)
-
+        # Determine token directories - populate BOTH to be safe on all platforms
+        token_dirs = [
+            os.path.expanduser("~/.garminconnect"),
+            os.path.expanduser("~/.garth")
+        ]
+        
         try:
-            # Decode base64 -> JSON -> Write files
+            # Decode base64 -> JSON
             tokens_json = base64.b64decode(garmin_tokens).decode('utf-8')
             tokens_dict = json.loads(tokens_json)
 
-            for filename, content in tokens_dict.items():
-                file_path = os.path.join(token_dir, filename)
-                with open(file_path, "w", encoding="utf-8") as f:
-                     f.write(content)
-            print("Session restored from tokens.")
+            for t_dir in token_dirs:
+                if not os.path.exists(t_dir):
+                    os.makedirs(t_dir)
+                
+                print(f"Restoring {len(tokens_dict)} tokens to {t_dir}...")
+                for filename, content in tokens_dict.items():
+                    file_path = os.path.join(t_dir, filename)
+                    with open(file_path, "w", encoding="utf-8") as f:
+                        f.write(content)
+                
+                # Debug: List files
+                print(f"Contents of {t_dir}: {os.listdir(t_dir)}")
+
+            print("Session restored successfully.")
         except Exception as e:
             print(f"Failed to restore tokens: {e}")
+            # Do NOT exit, try login anyway (it might fail, but let's see)
     # ---------------------------
 
     # ---------------------------
