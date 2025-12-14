@@ -4,10 +4,12 @@ import BioStateHeader from '@/components/dashboard/BioStateHeader'
 import ActiveTimeline from '@/components/dashboard/ActiveTimeline'
 import VolumeTrends from '@/components/dashboard/VolumeTrends'
 import RecentActivities from '@/components/dashboard/RecentActivities'
+import SyncStatus from '@/components/dashboard/SyncStatus'
 import { getTodayWorkouts, getRecentActivities } from '@/app/dashboard/actions'
 import { Plus, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 import PushManager from '@/components/features/notifications/PushManager'
+import { GarminDashboard } from '@/components/features/garmin/GarminDashboard'
 
 export default async function DashboardPage() {
     const workouts = await getTodayWorkouts()
@@ -30,14 +32,19 @@ export default async function DashboardPage() {
             </header>
 
             {/* Module A: Command Center */}
-            <div className="max-w-md mx-auto space-y-6">
+            <div className="max-w-md md:max-w-5xl mx-auto space-y-6">
 
                 {/* Bio-State Header */}
                 <Suspense fallback={<div className="h-24 bg-zinc-900 rounded-2xl animate-pulse" />}>
                     <BioStateHeader />
                 </Suspense>
 
-                <div className="grid grid-cols-1 gap-6">
+                {/* Garmin Stats Grid */}
+                <section>
+                    <GarminDashboard />
+                </section>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Active Timeline */}
                     <section>
                         <ActiveTimeline workouts={workouts || []} />
@@ -47,10 +54,17 @@ export default async function DashboardPage() {
                     <section className="h-48">
                         <VolumeTrends />
                     </section>
+                </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Recent Activities (Bento Item) */}
-                    <section>
+                    <section className="md:col-span-2">
                         <RecentActivities activities={activities || []} />
+                    </section>
+
+                    {/* Sync Console (Full Width) */}
+                    <section className="md:col-span-1">
+                        <SyncStatus />
                     </section>
                 </div>
 

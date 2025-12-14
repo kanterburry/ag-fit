@@ -4,10 +4,20 @@ import json
 import base64
 
 def export_tokens():
-    token_dir = os.path.expanduser("~/.garminconnect")
-    if not os.path.exists(token_dir):
-        print(f"Error: Token directory not found at {token_dir}")
-        print("Run 'py -3.12 scripts/garmin_bridge.py' interactively first to login.")
+    possible_dirs = [
+        os.path.expanduser("~/.garth"),
+        os.path.expanduser("~/.garminconnect")
+    ]
+    
+    token_dir = None
+    for d in possible_dirs:
+        if os.path.exists(d) and os.listdir(d):
+            token_dir = d
+            break
+            
+    if not token_dir:
+        print(f"Error: No token directories found in {possible_dirs}")
+        print("Run 'py -3.12 scripts/generate_keys.py' first.")
         return
 
     tokens = {}

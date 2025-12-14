@@ -8,15 +8,17 @@ const execPromise = util.promisify(exec);
 export async function POST() {
     try {
         // 1. Determine python command
-        // On Vercel this will fail (no python). On local Windows, 'py -3.12' or 'python'.
-        // We try 'py -3.12' since we know that's what the user has.
-        const command = 'py -3.12 scripts/garmin_bridge.py';
+        // TEMPORARY PROBE
+        // const command = 'py -3.12 -u scripts/diagnose_env.py';
+        const command = 'py -3.12 -u scripts/garmin_bridge.py';
 
         console.log(`Executing: ${command}`);
+        const tokenLen = process.env.GARMIN_TOKENS ? process.env.GARMIN_TOKENS.length : 0;
+        console.log(`Debug: GARMIN_TOKENS length in Node: ${tokenLen}`);
 
         const { stdout, stderr } = await execPromise(command, {
             cwd: process.cwd(),
-            env: process.env // Pass current env vars (including .env.local loaded by Next.js)
+            env: process.env
         });
 
         if (stderr) {
@@ -25,18 +27,22 @@ export async function POST() {
 
         console.log('Script stdout:', stdout);
 
+        if (stdout.trim().length === 0 && stderr) {
+            throw new Error("Script failed with no output. Check stderr.");
+        }
+
         return NextResponse.json({
             success: true,
             message: 'Sync completed',
-            details: stdout
+            output: stdout || stderr // Send whatever we got back to UI
         });
 
     } catch (error: any) {
         console.error('Sync failed:', error);
         return NextResponse.json({
             success: false,
-            error: error.message || 'Unknown error',
-            details: error.stdout || error.stderr
+            error: error.message || 'Unknown execution error',
+            output: error.stdout ? error.stdout + "\n" + (error.stderr || "") : (error.stderr || String(error))
         }, { status: 500 });
     }
 }

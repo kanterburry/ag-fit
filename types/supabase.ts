@@ -14,6 +14,42 @@ export type Database = {
     }
     public: {
         Tables: {
+            activities: {
+                Row: {
+                    activity_type: string
+                    avg_hr: number | null
+                    calories: number | null
+                    created_at: string | null
+                    distance: number | null
+                    duration: number | null
+                    id: number
+                    start_time: string
+                    user_id: string
+                }
+                Insert: {
+                    activity_type: string
+                    avg_hr?: number | null
+                    calories?: number | null
+                    created_at?: string | null
+                    distance?: number | null
+                    duration?: number | null
+                    id?: number
+                    start_time: string
+                    user_id: string
+                }
+                Update: {
+                    activity_type?: string
+                    avg_hr?: number | null
+                    calories?: number | null
+                    created_at?: string | null
+                    distance?: number | null
+                    duration?: number | null
+                    id?: number
+                    start_time?: string
+                    user_id?: string
+                }
+                Relationships: []
+            }
             assets: {
                 Row: {
                     cost_basis: number | null
@@ -97,8 +133,222 @@ export type Database = {
                 }
                 Relationships: []
             }
+            garmin_activities: {
+                Row: {
+                    activity_id: number
+                    activity_type: string | null
+                    avg_hr: number | null
+                    avg_speed_mps: number | null
+                    calories: number | null
+                    detailed_json: Json | null
+                    distance_meters: number | null
+                    duration_seconds: number | null
+                    elevation_gain_meters: number | null
+                    max_hr: number | null
+                    max_speed_mps: number | null
+                    name: string | null
+                    start_time: string
+                    steps: number | null
+                    user_id: string
+                }
+                Insert: {
+                    activity_id: number
+                    activity_type?: string | null
+                    avg_hr?: number | null
+                    avg_speed_mps?: number | null
+                    calories?: number | null
+                    detailed_json?: Json | null
+                    distance_meters?: number | null
+                    duration_seconds?: number | null
+                    elevation_gain_meters?: number | null
+                    max_hr?: number | null
+                    max_speed_mps?: number | null
+                    name?: string | null
+                    start_time: string
+                    steps?: number | null
+                    user_id: string
+                }
+                Update: {
+                    activity_id?: number
+                    activity_type?: string | null
+                    avg_hr?: number | null
+                    avg_speed_mps?: number | null
+                    calories?: number | null
+                    detailed_json?: Json | null
+                    distance_meters?: number | null
+                    duration_seconds?: number | null
+                    elevation_gain_meters?: number | null
+                    max_hr?: number | null
+                    max_speed_mps?: number | null
+                    name?: string | null
+                    start_time?: string
+                    steps?: number | null
+                    user_id?: string
+                }
+                Relationships: []
+            }
+            garmin_daily_metrics: {
+                Row: {
+                    body_battery_max: number | null
+                    body_battery_min: number | null
+                    calories_active: number | null
+                    calories_consumed: number | null
+                    date: string
+                    deep_sleep_seconds: number | null
+                    floors_climbed: number | null
+                    light_sleep_seconds: number | null
+                    max_hr: number | null
+                    rem_sleep_seconds: number | null
+                    resting_hr: number | null
+                    sleep_score: number | null
+                    sleep_seconds: number | null
+                    stress_avg: number | null
+                    total_distance_meters: number | null
+                    total_steps: number | null
+                    user_id: string
+                }
+                Insert: {
+                    body_battery_max?: number | null
+                    body_battery_min?: number | null
+                    calories_active?: number | null
+                    calories_consumed?: number | null
+                    date: string
+                    deep_sleep_seconds?: number | null
+                    floors_climbed?: number | null
+                    light_sleep_seconds?: number | null
+                    max_hr?: number | null
+                    rem_sleep_seconds?: number | null
+                    resting_hr?: number | null
+                    sleep_score?: number | null
+                    sleep_seconds?: number | null
+                    stress_avg?: number | null
+                    total_distance_meters?: number | null
+                    total_steps?: number | null
+                    user_id: string
+                }
+                Update: {
+                    body_battery_max?: number | null
+                    body_battery_min?: number | null
+                    calories_active?: number | null
+                    calories_consumed?: number | null
+                    date?: string
+                    deep_sleep_seconds?: number | null
+                    floors_climbed?: number | null
+                    light_sleep_seconds?: number | null
+                    max_hr?: number | null
+                    rem_sleep_seconds?: number | null
+                    resting_hr?: number | null
+                    sleep_score?: number | null
+                    sleep_seconds?: number | null
+                    stress_avg?: number | null
+                    total_distance_meters?: number | null
+                    total_steps?: number | null
+                    user_id?: string
+                }
+                Relationships: []
+            }
+            garmin_gear: {
+                Row: {
+                    brand: string | null
+                    date_added: string | null
+                    model: string | null
+                    name: string | null
+                    status: string | null
+                    total_distance_meters: number | null
+                    type_key: string | null
+                    user_id: string
+                    uuid: string
+                }
+                Insert: {
+                    brand?: string | null
+                    date_added?: string | null
+                    model?: string | null
+                    name?: string | null
+                    status?: string | null
+                    total_distance_meters?: number | null
+                    type_key?: string | null
+                    user_id: string
+                    uuid: string
+                }
+                Update: {
+                    brand?: string | null
+                    date_added?: string | null
+                    model?: string | null
+                    name?: string | null
+                    status?: string | null
+                    total_distance_meters?: number | null
+                    type_key?: string | null
+                    user_id?: string
+                    uuid?: string
+                }
+                Relationships: []
+            }
+            garmin_hrv: {
+                Row: {
+                    baseline_high_ms: number | null
+                    baseline_low_ms: number | null
+                    date: string
+                    last_night_5min_max_ms: number | null
+                    nightly_avg_ms: number | null
+                    status: string | null
+                    user_id: string
+                }
+                Insert: {
+                    baseline_high_ms?: number | null
+                    baseline_low_ms?: number | null
+                    date: string
+                    last_night_5min_max_ms?: number | null
+                    nightly_avg_ms?: number | null
+                    status?: string | null
+                    user_id: string
+                }
+                Update: {
+                    baseline_high_ms?: number | null
+                    baseline_low_ms?: number | null
+                    date?: string
+                    last_night_5min_max_ms?: number | null
+                    nightly_avg_ms?: number | null
+                    status?: string | null
+                    user_id?: string
+                }
+                Relationships: []
+            }
+            garmin_weight: {
+                Row: {
+                    bmi: number | null
+                    body_fat_percent: number | null
+                    body_water_percent: number | null
+                    bone_mass_kg: number | null
+                    date: string
+                    muscle_mass_kg: number | null
+                    user_id: string
+                    weight_kg: number | null
+                }
+                Insert: {
+                    bmi?: number | null
+                    body_fat_percent?: number | null
+                    body_water_percent?: number | null
+                    bone_mass_kg?: number | null
+                    date: string
+                    muscle_mass_kg?: number | null
+                    user_id: string
+                    weight_kg?: number | null
+                }
+                Update: {
+                    bmi?: number | null
+                    body_fat_percent?: number | null
+                    body_water_percent?: number | null
+                    bone_mass_kg?: number | null
+                    date?: string
+                    muscle_mass_kg?: number | null
+                    user_id?: string
+                    weight_kg?: number | null
+                }
+                Relationships: []
+            }
             planned_workouts: {
                 Row: {
+                    description: string | null
                     end_time: string | null
                     id: number
                     is_completed: boolean | null
@@ -108,6 +358,7 @@ export type Database = {
                     user_id: string
                 }
                 Insert: {
+                    description?: string | null
                     end_time?: string | null
                     id?: number
                     is_completed?: boolean | null
@@ -117,6 +368,7 @@ export type Database = {
                     user_id: string
                 }
                 Update: {
+                    description?: string | null
                     end_time?: string | null
                     id?: number
                     is_completed?: boolean | null
@@ -578,12 +830,12 @@ type PublicSchema = Database[Extract<keyof Database, "public">]
 export type Tables<
     PublicTableNameOrOptions extends
     | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
-    | { schema: keyof Database },
-    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    | { schema: keyof Omit<Database, "__InternalSupabase"> },
+    TableName extends PublicTableNameOrOptions extends { schema: keyof Omit<Database, "__InternalSupabase"> }
     ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
         Database[PublicTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
+> = PublicTableNameOrOptions extends { schema: keyof Omit<Database, "__InternalSupabase"> }
     ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
         Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
             Row: infer R
@@ -603,11 +855,11 @@ export type Tables<
 export type TablesInsert<
     PublicTableNameOrOptions extends
     | keyof PublicSchema["Tables"]
-    | { schema: keyof Database },
-    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    | { schema: keyof Omit<Database, "__InternalSupabase"> },
+    TableName extends PublicTableNameOrOptions extends { schema: keyof Omit<Database, "__InternalSupabase"> }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
+> = PublicTableNameOrOptions extends { schema: keyof Omit<Database, "__InternalSupabase"> }
     ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
         Insert: infer I
     }
@@ -624,11 +876,11 @@ export type TablesInsert<
 export type TablesUpdate<
     PublicTableNameOrOptions extends
     | keyof PublicSchema["Tables"]
-    | { schema: keyof Database },
-    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    | { schema: keyof Omit<Database, "__InternalSupabase"> },
+    TableName extends PublicTableNameOrOptions extends { schema: keyof Omit<Database, "__InternalSupabase"> }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
+> = PublicTableNameOrOptions extends { schema: keyof Omit<Database, "__InternalSupabase"> }
     ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
         Update: infer U
     }
@@ -645,11 +897,11 @@ export type TablesUpdate<
 export type Enums<
     PublicEnumNameOrOptions extends
     | keyof PublicSchema["Enums"]
-    | { schema: keyof Database },
-    EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+    | { schema: keyof Omit<Database, "__InternalSupabase"> },
+    EnumName extends PublicEnumNameOrOptions extends { schema: keyof Omit<Database, "__InternalSupabase"> }
     ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = PublicEnumNameOrOptions extends { schema: keyof Database }
+> = PublicEnumNameOrOptions extends { schema: keyof Omit<Database, "__InternalSupabase"> }
     ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
     : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
@@ -658,14 +910,20 @@ export type Enums<
 export type CompositeTypes<
     PublicCompositeTypeNameOrOptions extends
     | keyof PublicSchema["CompositeTypes"]
-    | { schema: keyof Database },
+    | { schema: keyof Omit<Database, "__InternalSupabase"> },
     CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-        schema: keyof Database
+        schema: keyof Omit<Database, "__InternalSupabase">
     }
     ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof Omit<Database, "__InternalSupabase"> }
     ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
     : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
     ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
+
+export const Constants = {
+    public: {
+        Enums: {},
+    },
+} as const

@@ -54,8 +54,13 @@ def generate_and_export():
             tokens_json = json.dumps(tokens)
             tokens_b64 = base64.b64encode(tokens_json.encode('utf-8')).decode('utf-8')
 
+            # Write to file for safety
+            with open("garmin_tokens_base64.txt", "w", encoding="utf-8") as f:
+                f.write(tokens_b64)
+
             print("\n" + "="*60)
             print("SUCCESS! COPY THE KEY BELOW FOR GITHUB SECRETS (GARMIN_TOKENS):")
+            print("(Also saved to garmin_tokens_base64.txt)")
             print("="*60 + "\n")
             print(tokens_b64)
             print("\n" + "="*60)
