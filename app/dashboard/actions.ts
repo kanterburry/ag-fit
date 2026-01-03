@@ -274,6 +274,37 @@ export async function getGarminChallengesAndGoals() {
     return { challenges, goals }
 }
 
+export async function getActiveProtocols() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return []
+
+    const { data: protocols } = await supabase
+        .from('protocols')
+        .select(`
+            *,
+            protocol_phases (
+                id,
+                name,
+                type,
+                duration_days,
+                order_index
+            ),
+            protocol_daily_logs (
+                id,
+                date,
+                data,
+                notes
+            )
+        `)
+        .eq('user_id', user.id)
+        .neq('status', 'completed') // Exclude completed protocols
+        .order('created_at', { ascending: false })
+
+    return protocols || []
+}
+
 export async function getCommandCenterStats() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()

@@ -16,10 +16,13 @@ import SyncButton from '@/components/dashboard/SyncButton'
 import { BioInsights } from '@/components/dashboard/BioInsights'
 
 export default async function DashboardPage() {
-    const workouts = await getTodayWorkouts()
-    const activities = await getRecentActivities()
-    const protocolDataList = await getActiveProtocols()
-    const bioInsights = await getBioInsights()
+    // Fetch all data in parallel for faster page load
+    const [workouts, activities, protocolDataList, bioInsights] = await Promise.all([
+        getTodayWorkouts(),
+        getRecentActivities(),
+        getActiveProtocols(),
+        getBioInsights()
+    ])
 
     return (
         <div className="min-h-screen bg-black text-white p-6 pb-24 space-y-8">
@@ -31,26 +34,37 @@ export default async function DashboardPage() {
                     </Suspense>
                 </div>
 
-                {/* Welcome / Context */}
-                <div className="flex items-center justify-between mb-4">
-                    <div>
-                        <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
+                {/* Bio Command Center Header */}
+                <div className="flex items-center justify-between mb-6">
+                    <div className="space-y-1">
+                        <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-purple-400 via-pink-500 to-purple-600 bg-clip-text text-transparent">
                             Bio-Command Center
                         </h2>
-                        <p className="text-zinc-500">Your physiological status and daily tasks.</p>
+                        <p className="text-sm text-zinc-500">Your active protocol experiments and progress</p>
                     </div>
-                    {/* SyncButton moved to Header */}
                 </div>
-
-                {/* Scheduled Workouts (ActiveTimeline) removed per user request */}
 
                 {/* Bio-Experiment Module */}
                 <section>
                     <ProtocolManager protocolDataList={protocolDataList} />
                 </section>
 
-                {/* Garmin Stats Grid */}
+                {/* Bio Intelligence Module - Adjacent to Bio Command Center */}
+                {bioInsights && (
+                    <section>
+                        <BioInsights
+                            clinical={bioInsights.clinical}
+                            community={bioInsights.community}
+                        />
+                    </section>
+                )}
+
+                {/* Health Dashboard - Wearable Stats */}
                 <section>
+                    <div className="mb-4">
+                        <h2 className="text-xl font-bold text-zinc-100">Health Dashboard</h2>
+                        <p className="text-sm text-zinc-500">Live data from your wearable device</p>
+                    </div>
                     <GarminDashboard />
                 </section>
 
@@ -59,12 +73,6 @@ export default async function DashboardPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Recent Activities (Bento Item) */}
                     <section className="md:col-span-2 space-y-6">
-                        {bioInsights && (
-                            <BioInsights
-                                clinical={bioInsights.clinical}
-                                community={bioInsights.community}
-                            />
-                        )}
                         <RecentActivities activities={activities || []} />
                     </section>
 
@@ -88,7 +96,7 @@ export default async function DashboardPage() {
                         className="flex-1 max-w-[160px] h-14 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center gap-2 text-zinc-400 font-medium active:scale-95 transition-transform backdrop-blur-md bg-opacity-80"
                     >
                         <MessageSquare size={20} />
-                        <span>AI Coach</span>
+                        <span>ProtocolAI</span>
                     </Link>
                 </div>
             </div>

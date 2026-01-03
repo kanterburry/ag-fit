@@ -1,17 +1,29 @@
 'use client'
 
-import { useState } from 'react'
-import { DailyCheckInCard } from './DailyCheckInCard'
-import { DailyCheckInCard as DailyCheckInCardType } from './DailyCheckInCard' // Import type usage? No need.
-import { ResultsChart } from './ResultsChart'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
-import { Activity, ClipboardList } from 'lucide-react'
+import { useCallback } from 'react'
+import DailyCheckInCard from './DailyCheckInCard'
+import { Card, CardContent } from '@/components/ui/card'
+import { Activity, ClipboardList, ChevronLeft, ChevronRight } from 'lucide-react'
+import useEmblaCarousel from 'embla-carousel-react'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function ProtocolManager({ protocolDataList }: { protocolDataList: any[] }) {
-    // 1. Deduplicate protocols by Title
+    const [emblaRef, emblaApi] = useEmblaCarousel({
+        align: 'start',
+        loop: false,
+        skipSnaps: false,
+        dragFree: false
+    })
+
+    const scrollPrev = useCallback(() => {
+        if (emblaApi) emblaApi.scrollPrev()
+    }, [emblaApi])
+
+    const scrollNext = useCallback(() => {
+        if (emblaApi) emblaApi.scrollNext()
+    }, [emblaApi])
+
+    // Deduplicate protocols by Title
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const uniqueProtocols = protocolDataList.reduce((acc: any[], current) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -50,18 +62,46 @@ export function ProtocolManager({ protocolDataList }: { protocolDataList: any[] 
 
     return (
         <div className="space-y-4">
-            <h2 className="text-xl font-bold tracking-tight px-1">Summary</h2>
-            {/* Responsive Grid for "Leaner/Smaller" look on Desktop */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {uniqueProtocols.map((protocolData: any, index: number) => (
-                    <div key={protocolData.protocol.id} className="animate-in fade-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: `${index * 50}ms` }}>
-                        <DailyCheckInCard
-                            protocolData={protocolData}
-                            colorIndex={index}
-                        />
+            <div className="flex items-center justify-between px-1">
+                <h2 className="text-xl font-bold tracking-tight">Summary</h2>
+
+                {/* Navigation Buttons */}
+                {uniqueProtocols.length > 1 && (
+                    <div className="flex gap-2">
+                        <button
+                            onClick={scrollPrev}
+                            className="p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
+                            aria-label="Previous protocol"
+                        >
+                            <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <button
+                            onClick={scrollNext}
+                            className="p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
+                            aria-label="Next protocol"
+                        >
+                            <ChevronRight className="w-5 h-5" />
+                        </button>
                     </div>
-                ))}
+                )}
+            </div>
+
+            {/* Embla Carousel */}
+            <div className="overflow-hidden" ref={emblaRef}>
+                <div className="flex gap-4">
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                    {uniqueProtocols.map((protocolData: any, index: number) => (
+                        <div
+                            key={protocolData.protocol.id}
+                            className="flex-[0_0_100%] min-w-0 md:flex-[0_0_45%] lg:flex-[0_0_30%] xl:flex-[0_0_22%]"
+                        >
+                            <DailyCheckInCard
+                                protocolData={protocolData}
+                                colorIndex={index}
+                            />
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     )

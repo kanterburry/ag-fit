@@ -16,7 +16,7 @@ export function BodyBatteryCard({ daily }: BodyBatteryProps) {
     const current = max // Approximate current as max for now if not available, or just show range
 
     return (
-        <Card className="border-slate-800 bg-slate-950/50 backdrop-blur-sm h-full">
+        <Card className="border-zinc-800 bg-zinc-950/50 backdrop-blur-sm h-full">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <div className="flex items-center gap-2">
                     <Battery className="h-5 w-5 text-blue-400" />
@@ -44,9 +44,9 @@ export function BodyBatteryCard({ daily }: BodyBatteryProps) {
                         <span>50</span>
                         <span>100</span>
                     </div>
-                    <div className="h-3 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800 relative">
+                    <div className="h-3 w-full bg-zinc-900 rounded-full overflow-hidden border border-zinc-800 relative">
                         {/* Background ticks */}
-                        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-slate-800/50" />
+                        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-zinc-800/50" />
 
                         <div
                             className="h-full bg-gradient-to-r from-red-500 via-amber-500 to-emerald-500 opacity-90 transition-all duration-1000"

@@ -12,7 +12,7 @@ export function DashboardHeader() {
         if (pathname.includes('/protocols')) return 'Protocols';
         if (pathname.includes('/workouts')) return 'Workouts';
         if (pathname.includes('/log')) return 'Log';
-        if (pathname.includes('/coach')) return 'AI Coach';
+        if (pathname.includes('/coach')) return 'ProtocolAI';
         return 'Dashboard';
     }
 

@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button'
 import { PROTOCOL_TEMPLATES } from '@/lib/protocols/templates'
 import { createProtocolFromTemplate } from '@/app/actions/protocol'
+import { BehaviorSelector } from './onboarding/BehaviorSelector'
 import { Coffee, Moon, Smartphone, Activity, ArrowRight, Loader2, Zap } from 'lucide-react'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -23,6 +24,7 @@ interface Props {
 
 export function ProtocolLibrary({ userProtocols }: Props) {
     const [launchingId, setLaunchingId] = useState<string | null>(null)
+    const [selectedTemplateForConfig, setSelectedTemplateForConfig] = useState<string | null>(null)
     const [error, setError] = useState<string | null>(null)
 
     // Filter active and deduplicate by title (keep latest)
@@ -38,7 +40,7 @@ export function ProtocolLibrary({ userProtocols }: Props) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const pastProtocols = userProtocols.filter((p: any) => p.status !== 'active')
 
-    const handleLaunch = async (templateId: string) => {
+    const initiateLaunch = (templateId: string) => {
         // Check if THIS protocol is already active
         const template = PROTOCOL_TEMPLATES.find(t => t.id === templateId)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,15 +48,32 @@ export function ProtocolLibrary({ userProtocols }: Props) {
             window.location.href = '/dashboard'
             return
         }
+        // Open Behavior Selector
+        setSelectedTemplateForConfig(templateId)
+    }
+
+    const handleFinalLaunch = async (habits: string[]) => {
+        if (!selectedTemplateForConfig) return
 
         try {
-            setLaunchingId(templateId)
-            setError(null)
-            const result = await createProtocolFromTemplate(templateId)
+            setLaunchingId(selectedTemplateForConfig)
+            // TODO: Pass habits to the start function (Need to update server action first)
+            // For now, we will store them later or pass them if action supports it. 
+            // Checking action signature... it only takes templateId. 
+            // We need to UPDATE the server action to accept habits.
+            // For this step, let's just proceed with launch and log habits to console/localstorage as placeholder?
+            // BETTER: Let's assume we'll update the action in next step.
+
+            const result = await createProtocolFromTemplate(selectedTemplateForConfig, habits)
 
             if (result?.error) {
+                if (result.error === 'Unauthorized' || result.error.includes('Unauthorized')) {
+                    window.location.href = '/login?next=/dashboard/protocols'
+                    return
+                }
                 setError(result.error)
                 setLaunchingId(null)
+                setSelectedTemplateForConfig(null)
             } else if (result?.success) {
                 // Success! Redirect to dashboard
                 window.location.href = '/dashboard'
@@ -63,7 +82,24 @@ export function ProtocolLibrary({ userProtocols }: Props) {
             console.error('Launch error:', e)
             setError('An unexpected error occurred')
             setLaunchingId(null)
+            setSelectedTemplateForConfig(null)
         }
+    }
+
+    if (selectedTemplateForConfig) {
+        // Import dynamically or strictly? BehaviorSelector is imported above? No, need to import it.
+        // Let's assume imports will be added at top.
+        return (
+            <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+                {/* Behavior Selector Wrapper */}
+                <div className="w-full max-w-lg">
+                    <BehaviorSelector
+                        onBack={() => setSelectedTemplateForConfig(null)}
+                        onComplete={handleFinalLaunch}
+                    />
+                </div>
+            </div>
+        )
     }
 
     return (
@@ -204,7 +240,7 @@ export function ProtocolLibrary({ userProtocols }: Props) {
                             <CardFooter>
                                 <Button
                                     className={`w-full transition-all group ${isRunning ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-slate-800 hover:bg-primary hover:text-slate-950'}`}
-                                    onClick={() => isRunning ? (window.location.href = '/dashboard') : handleLaunch(template.id)}
+                                    onClick={() => isRunning ? (window.location.href = '/dashboard') : initiateLaunch(template.id)}
                                     disabled={false}
                                 >
                                     {launchingId === template.id ? (

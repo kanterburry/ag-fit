@@ -22,7 +22,7 @@ export default function CoachPage() {
                         <Bot size={20} className="text-purple-400" />
                     </div>
                     <div>
-                        <h1 className="font-bold">AI Coach (Gemini 2.0)</h1>
+                        <h1 className="font-bold">ProtocolAI Research Assistant</h1>
                         <p className="text-xs text-green-500 flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                             Online

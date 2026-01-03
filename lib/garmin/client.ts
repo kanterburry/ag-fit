@@ -5,17 +5,32 @@ export class GarminClient {
     private isAuthenticated: boolean = false;
 
     constructor() {
-        this.client = new GarminConnect();
+        const email = process.env.GARMIN_EMAIL;
+        const password = process.env.GARMIN_PASSWORD || process.env.GARMIN_PASS;
+
+        if (!email || !password) {
+            console.warn('Garmin credentials not configured in environment');
+            this.client = new GarminConnect();
+        } else {
+            this.client = new GarminConnect({ username: email, password });
+        }
     }
 
     async login() {
         if (this.isAuthenticated) return;
 
         const email = process.env.GARMIN_EMAIL;
-        const password = process.env.GARMIN_PASSWORD;
+        const password = process.env.GARMIN_PASSWORD || process.env.GARMIN_PASS;
+
+        console.log('[GarminClient] Login Attempt:', {
+            hasEmail: !!email,
+            hasPassword: !!password,
+            passwordVar: process.env.GARMIN_PASSWORD ? 'GARMIN_PASSWORD' : (process.env.GARMIN_PASS ? 'GARMIN_PASS' : 'NONE')
+        });
 
         if (!email || !password) {
-            throw new Error('Missing GARMIN_EMAIL or GARMIN_PASSWORD environment variables');
+            console.warn('Garmin credentials missing in environment variables');
+            throw new Error('GARMIN_CREDENTIALS_MISSING');
         }
 
         try {
@@ -24,7 +39,7 @@ export class GarminClient {
             console.log('Garmin authenticated successfully');
         } catch (error) {
             console.error('Garmin authentication failed:', error);
-            throw error;
+            throw new Error('GARMIN_AUTH_FAILED: ' + (error as Error).message);
         }
     }
 
@@ -59,6 +74,32 @@ export class GarminClient {
             return activities;
         } catch (error) {
             console.error('Failed to fetch activities:', error);
+            throw error;
+        }
+    }
+
+    async getTrainingStatus() {
+        await this.login();
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const c = this.client as any;
+            const status = await c.getTrainingStatus();
+            return status;
+        } catch (error) {
+            console.error('Failed to fetch training status:', error);
+            throw error;
+        }
+    }
+
+    async getRacePredictions() {
+        await this.login();
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const c = this.client as any;
+            const predictions = await c.getRacePredictions();
+            return predictions;
+        } catch (error) {
+            console.error('Failed to fetch race predictions:', error);
             throw error;
         }
     }

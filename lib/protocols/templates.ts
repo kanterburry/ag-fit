@@ -14,12 +14,47 @@ export type ProtocolTemplate = {
         key: string
         label: string
         source: 'manual' | 'automated'
-        metricType: 'number' | 'time' | 'select' | 'boolean'
+        metricType: 'number' | 'time' | 'select' | 'boolean' | 'text'
         suffix?: string
         options?: string[]
         placeholder?: string
         icon?: 'moon' | 'activity' | 'zap' | 'smartphone' | 'coffee'
+        // Flexible Logging Attributes
+        attributes?: {
+            key: string
+            label: string
+            type: 'time' | 'number' | 'select' | 'text'
+            options?: string[]
+            required?: boolean
+            suffix?: string
+        }[]
     }[]
+    studies?: string[] // Array of research study URLs or DOIs
+}
+
+export const HABIT_CATEGORIES = {
+    SLEEP: 'Sleep-Related',
+    TREATMENTS: 'Treatments',
+    SELF_CARE: 'Self-Care',
+    LIFESTYLE: 'Lifestyle'
+} as const
+
+export const HABIT_OPTIONS = {
+    [HABIT_CATEGORIES.SLEEP]: [
+        'CPAP Machine', 'Ear Plugs/Headphones', 'Eye Mask', 'Light Exercise Before Bed',
+        'Moderate Exercise Before Bed', 'Vigorous Exercise Before Bed', 'Humidifier Use', 'Nasal Strips'
+    ],
+    [HABIT_CATEGORIES.TREATMENTS]: [
+        'Acupuncture', 'Chiropractor', 'Compression Therapy', 'Cupping',
+        'Light Therapy', 'Massage Therapy', 'Physical Therapy'
+    ],
+    [HABIT_CATEGORIES.SELF_CARE]: [
+        'Cold Showers/Baths', 'Journaling', 'Sauna/Steam Room', 'Stretching', 'Sunlight'
+    ],
+    [HABIT_CATEGORIES.LIFESTYLE]: [
+        'Alcohol', 'Morning Caffeine', 'Late Caffeine', 'Light Exercise',
+        'Moderate Exercise', 'Vigorous Exercise', 'Healthy Meals', 'Heavy Meals'
+    ]
 }
 
 export const PROTOCOL_TEMPLATES: ProtocolTemplate[] = [
@@ -43,10 +78,19 @@ export const PROTOCOL_TEMPLATES: ProtocolTemplate[] = [
                 metricType: 'number',
                 suffix: 'mg',
                 placeholder: 'e.g., 200',
-                icon: 'coffee'
+                icon: 'coffee',
+                attributes: [
+                    { key: 'time', label: 'Time Consumed', type: 'time', required: true },
+                    { key: 'type', label: 'Source', type: 'select', options: ['Coffee', 'Tea', 'Energy Drink', 'Pills'], required: true },
+                    { key: 'amount', label: 'Amount', type: 'number', suffix: 'mg', required: true }
+                ]
             },
             { key: 'sleep_score', label: 'Sleep Score', source: 'automated', metricType: 'number', suffix: '%', icon: 'moon' },
             { key: 'deep_sleep', label: 'Deep Sleep', source: 'automated', metricType: 'number', suffix: 'min', icon: 'moon' }
+        ],
+        studies: [
+            'https://pubmed.ncbi.nlm.nih.gov/23313551/',
+            'https://pubmed.ncbi.nlm.nih.gov/26899133/'
         ]
     },
     {
@@ -70,6 +114,10 @@ export const PROTOCOL_TEMPLATES: ProtocolTemplate[] = [
             },
             { key: 'hrv', label: 'HRV', source: 'automated', metricType: 'number', suffix: 'ms', icon: 'activity' },
             { key: 'recovery_score', label: 'Recovery', source: 'automated', metricType: 'number', suffix: '%', icon: 'activity' }
+        ],
+        studies: [
+            'https://pubmed.ncbi.nlm.nih.gov/31130584/',
+            'https://pubmed.ncbi.nlm.nih.gov/28485729/'
         ]
     },
     {
@@ -93,6 +141,10 @@ export const PROTOCOL_TEMPLATES: ProtocolTemplate[] = [
                 icon: 'smartphone'
             },
             { key: 'sleep_latency', label: 'Sleep Latency', source: 'automated', metricType: 'number', suffix: 'min', icon: 'moon' }
+        ],
+        studies: [
+            'https://pubmed.ncbi.nlm.nih.gov/30311830/',
+            'https://pubmed.ncbi.nlm.nih.gov/29073412/'
         ]
     },
     {
@@ -111,6 +163,10 @@ export const PROTOCOL_TEMPLATES: ProtocolTemplate[] = [
             { key: 'fasting_glucose', label: 'Fasting Glucose', source: 'manual', metricType: 'number', suffix: 'mg/dL', icon: 'zap' },
             { key: 'ketones', label: 'Blood Ketones', source: 'manual', metricType: 'number', suffix: 'mmol/L', icon: 'zap' },
             { key: 'zone2_duration', label: 'Zone 2 Duration', source: 'automated', metricType: 'time', icon: 'activity' }
+        ],
+        studies: [
+            'https://pubmed.ncbi.nlm.nih.gov/28715993/',
+            'https://pubmed.ncbi.nlm.nih.gov/31614942/'
         ]
     }
 ]

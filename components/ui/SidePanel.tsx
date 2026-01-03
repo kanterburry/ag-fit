@@ -9,7 +9,7 @@ const links = [
     { href: "/dashboard", label: "Timeline", icon: Home },
     { href: "/dashboard/planner", label: "Plan", icon: Calendar },
     { href: "/dashboard/log", label: "Log Workout", icon: Dumbbell },
-    { href: "/dashboard/coach", label: "AI Coach", icon: Bot },
+    { href: "/dashboard/coach", label: "ProtocolAI", icon: Bot },
     { href: "/dashboard/analysis", label: "Stats", icon: PieChart },
     { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];

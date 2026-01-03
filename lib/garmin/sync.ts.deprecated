@@ -1,0 +1,142 @@
+// DEPRECATED: This TypeScript sync implementation has been replaced by Python garmin_bridge.py
+// Kept for reference only. The Python implementation is more complete and handles:
+// - Body Battery sync (garmin_body_battery table)
+// - Training Status sync (garmin_training_status table)  
+// - Race Predictions sync (garmin_races table)
+// - Wellness data (respiration, SpO2, blood pressure)
+// - And more comprehensive Garmin API coverage
+
+// This file can be deleted once confirmed Python sync works correctly.
+
+import { createClient } from '@/utils/supabase/server'
+import { GarminClient } from './client'
+
+export async function syncGarminData() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        throw new Error('Unauthorized: No logged in user for sync')
+    }
+
+    const client = new GarminClient()
+
+    // 1. Sync Daily Metrics (Today & Yesterday to capture sleep)
+    const datesToSync = [new Date(), new Date(Date.now() - 86400000)]
+    const results = []
+
+    for (const date of datesToSync) {
+        try {
+            const data = await client.getDailyStats(date)
+            // Parse and Upsert
+            const metrics = {
+                user_id: user.id,
+                date: date.toISOString().split('T')[0],
+                steps: data.summary?.totalSteps,
+                rhr: data.summary?.restingHeartRate,
+                stress_level: data.summary?.averageStressLevel,
+                sleep_score: data.sleep?.dailySleepDTO?.sleepScores?.overall?.value,
+                hrv: data.hrv?.hrvSummary?.weeklyAvg,
+                body_battery_min: data.summary?.bodyBatteryLowestValue,
+                body_battery_max: data.summary?.bodyBatteryHighestValue
+            }
+
+            // Remove undefined
+            const cleanedMetrics = Object.fromEntries(
+                Object.entries(metrics).filter(([_, v]) => v !== undefined)
+            )
+
+            const { error } = await supabase
+                .from('daily_metrics')
+                .upsert(cleanedMetrics, { onConflict: 'user_id, date' })
+
+            if (error) throw error
+            results.push({ date: metrics.date, status: 'success' })
+
+        } catch (e: any) {
+            console.error(`Error syncing ${date.toISOString()}:`, e)
+            results.push({ date: date.toISOString(), status: 'failed', error: e.message })
+        }
+    }
+
+    // 2. Sync Activities
+    try {
+        const activities = await client.getActivities(5)
+        for (const activity of activities) {
+            const payload = {
+                user_id: user.id,
+                id: activity.activityId,
+                activity_type: activity.activityType.typeKey,
+                start_time: activity.startTimeLocal,
+                duration: activity.duration,
+                distance: activity.distance,
+                calories: activity.calories,
+                avg_hr: activity.averageHR,
+                created_at: new Date().toISOString()
+            }
+
+            const { error } = await supabase
+                .from('activities')
+                .upsert(payload, { onConflict: 'id' })
+
+            if (error) console.error('Failed to insert activity:', activity.activityId, error)
+        }
+    } catch (e) {
+        console.error('Failed to sync activities', e)
+    }
+
+    // 3. Sync Training Status
+    try {
+        const trainingStatus = await client.getTrainingStatus()
+        if (trainingStatus) {
+            const payload = {
+                user_id: user.id,
+                date: new Date().toISOString().split('T')[0],
+                status: trainingStatus.status,
+                fitness_age: trainingStatus.fitnessAge,
+                lactate_threshold_bpm: trainingStatus.lactateThreshold?.heartRate,
+                lactate_threshold_speed: trainingStatus.lactateThreshold?.speed,
+                vo2_max_running: trainingStatus.vo2Max?.running,
+                vo2_max_cycling: trainingStatus.vo2Max?.cycling,
+                endurance_score: trainingStatus.enduranceScore,
+                heat_acclimation: trainingStatus.heatAcclimation,
+                altitude_acclimation: trainingStatus.altitudeAcclimation
+            }
+
+            const { error } = await supabase
+                .from('garmin_training_status')
+                .upsert(payload, { onConflict: 'date' })
+
+            if (error) console.error('Failed to sync training status:', error)
+        }
+    } catch (e) {
+        console.error('Failed to sync training status', e)
+    }
+
+    // 4. Sync Race Predictions
+    try {
+        const racePredictions = await client.getRacePredictions()
+        if (racePredictions && racePredictions.length > 0) {
+            for (const race of racePredictions) {
+                const payload = {
+                    user_id: user.id,
+                    race_name: race.raceName || race.description,
+                    predicted_time_seconds: race.predictedTimeSeconds,
+                    distance_meters: race.distanceMeters,
+                    confidence_score: race.confidenceScore,
+                    calculated_date: new Date().toISOString().split('T')[0]
+                }
+
+                const { error } = await supabase
+                    .from('garmin_races')
+                    .insert(payload)
+
+                if (error) console.error('Failed to insert race prediction:', race, error)
+            }
+        }
+    } catch (e) {
+        console.error('Failed to sync race predictions', e)
+    }
+
+    return { success: true, results }
+}

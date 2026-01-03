@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 const navItems = [
     { href: "/dashboard", label: "Overview", icon: Home },
     { href: "/dashboard/protocols", label: "Protocols", icon: FlaskConical },
-    { href: "/dashboard/workouts", label: "Workouts", icon: Dumbbell },
     { href: "/dashboard/calendar", label: "Calendar", icon: Calendar },
     { href: "/dashboard/activity", label: "History", icon: History },
 ];

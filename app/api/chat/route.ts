@@ -12,82 +12,107 @@ export async function POST(req: Request) {
         const supabase = await createClient();
         const today = new Date();
         const startOfHistory = new Date();
-        startOfHistory.setDate(today.getDate() - 180); // 180 days ago
+        startOfHistory.setDate(today.getDate() - 90); // 90 days of health data
 
         const startOfGarmin = new Date();
-        startOfGarmin.setDate(today.getDate() - 30); // 30 days ago
+        startOfGarmin.setDate(today.getDate() - 30); // 30 days of metrics
 
-        // 1. Fetch massive history (Context Stuffing)
-        const { data: fullWorkoutHistory } = await supabase
-            .from('activities')
-            .select('*')
-            .gte('start_time', startOfHistory.toISOString())
-            .order('start_time', { ascending: false });
+        // Get user
+        const { data: { user } } = await supabase.auth.getUser();
 
+        // 1. Fetch user's active and recent protocols
+        const { data: protocols } = await supabase
+            .from('protocols')
+            .select(`
+                *,
+                protocol_phases (*),
+                daily_logs (*)
+            `)
+            .eq('user_id', user?.id)
+            .order('created_at', { ascending: false });
+
+        // 2. Fetch recent health metrics
         const { data: garminStats } = await supabase
             .from('garmin_daily_metrics')
-            .select('date, resting_hr, sleep_score, stress_avg, body_battery_max, body_battery_min')
+            .select('date, resting_hr, sleep_score, stress_avg, body_battery_max, body_battery_min, steps, calories_active')
             .gte('date', startOfGarmin.toISOString().split('T')[0])
             .order('date', { ascending: false });
 
-        const { data: plannedWorkouts } = await supabase
-            .from('planned_workouts')
+        // 3. Fetch training metrics
+        const { data: trainingStatus } = await supabase
+            .from('garmin_training_status')
             .select('*')
-            .gte('start_time', today.toISOString())
-            .order('start_time', { ascending: true })
-            .limit(10); // Next 10 planned workouts
+            .order('date', { ascending: false })
+            .limit(30);
 
-        // Get user ID
-        const { data: { user } } = await supabase.auth.getUser();
+        // 4. Fetch recent activities
+        const { data: activities } = await supabase
+            .from('activities')
+            .select('activity_type, start_time, duration_seconds, distance_meters, calories')
+            .gte('start_time', startOfHistory.toISOString())
+            .order('start_time', { ascending: false })
+            .limit(50);
 
         const result = await streamText({
-            model: google('gemini-1.5-flash-001'), // Use Flash for massive context window
+            model: google('gemini-2.0-flash-exp'), // Use Gemini 2.0 Flash for best performance
             messages,
             // @ts-ignore
             maxSteps: 5,
-            system: `You are the AG-Fit AI Coach. Your identity is a blend of James Clear (Atomic Habits) and a high-performance Strength Coach.
+            system: `You are ProtocolAI - an AI research assistant specialized in n=1 self-experimentation and behavioral science.
 
-        You have access to the user's complete training history for the last 6 months and physiological data for the last 30 days.
-        
-        DATA CONTEXT:
-        - Recent Garmin Stats (Last 30 Days): ${JSON.stringify(garminStats)}
-        - Workout History (Last 180 Days): ${JSON.stringify(fullWorkoutHistory)}
-        - Upcoming Planned Workouts: ${JSON.stringify(plannedWorkouts)}
-        
-        CAPABILITIES:
-        - You can SCHEDULE workouts for the user. If they ask to "plan a leg day for Friday", DO IT using the tool.
-        - You DO NOT need to call tools to get history - you already have it in the context above.
-        
-        STYLE:
-        - Concise, punchy, motivational.
-        - Analyze patterns in the provided data to answer questions (e.g. "How is my sleep affecting my training?").
-        - If creating a workout, confirm the details (Time, Date) before calling the tool if vague.`,
+Your core mission: Help users understand their habit experiments (protocols) through the lens of academic research and their personal health data.
+
+=== YOUR DATA ACCESS ===
+
+PROTOCOLS (User's Experiments):
+${JSON.stringify(protocols, null, 2)}
+
+HEALTH METRICS (Last 30 Days):
+${JSON.stringify(garminStats, null, 2)}
+
+TRAINING STATUS:
+${JSON.stringify(trainingStatus, null, 2)}
+
+RECENT ACTIVITIES:
+${JSON.stringify(activities, null, 2)}
+
+=== YOUR CAPABILITIES ===
+
+1. **Pattern Analysis**: Identify correlations between protocols and health outcomes (sleep, HRV, body battery, etc.)
+2. **Research Synthesis**: Connect user's experiments to peer-reviewed research with proper citations
+3. **Hypothesis Generation**: Suggest new protocols based on scientific literature and user's data
+4. **Protocol Optimization**: Recommend adjustments to ongoing experiments based on results
+
+=== RESPONSE GUIDELINES ===
+
+**ALWAYS cite sources** when referencing research:
+- Format: "According to [Author et al., Year], [finding]..."
+- Prefer recent meta-analyses and RCTs
+- Link lifestyle metrics (caffeine, sleep, exercise) to measurable outcomes
+
+**Data-Driven Insights**:
+- Reference specific data points from user's protocols
+- Show before/after comparisons when relevant
+- Quantify improvements (e.g., "7% increase in sleep score")
+
+**Actionable Recommendations**:
+- Suggest protocol modifications with scientific rationale
+- Propose new experiments with expected outcomes
+- Recommend optimal timing/dosing based on research
+
+**Style**:
+- Concise, evidence-based, scientific but accessible
+- Use bullet points for clarity
+- Highlight key insights with bold text
+
+Example Response:
+"Your Caffeine Reset protocol shows a **15% improvement in sleep score** (baseline: 68 → current: 78). This aligns with research showing caffeine's 5-6 hour half-life affects sleep architecture (Drake et al., 2013). 
+
+**Recommendation**: Extend your caffeine cutoff to 1pm for optimal sleep quality, as adenosine receptor upregulation continues for 12-14 days (Fredholm et al., 1999)."
+
+Remember: You're a research assistant, not a fitness coach. Focus on scientific evidence and data analysis.`,
             tools: {
-                createWorkout: tool({
-                    description: 'Schedule a new workout in the calendar',
-                    parameters: z.object({
-                        title: z.string().describe('The title of the workout e.g. "Leg Day"'),
-                        description: z.string().describe('Detailed exercises or notes'),
-                        date: z.string().describe('YYYY-MM-DD date string'),
-                        time: z.string().describe('HH:mm time string (24hr)'),
-                    }),
-                    // @ts-ignore
-                    execute: async (args: { title: string; description: string; date: string; time: string }) => {
-                        const { title, description, date, time } = args;
-                        if (!user) return "Error: User not authenticated.";
-                        const start_time = new Date(`${date}T${time}`).toISOString();
-                        const { error } = await supabase.from('planned_workouts').insert({
-                            title,
-                            description,
-                            start_time,
-                            is_completed: false,
-                            user_id: user.id
-                        });
-                        if (error) return `Error creating workout: ${error.message}`;
-                        return `Workout "${title}" scheduled for ${date} at ${time}.`;
-                    },
-                }),
-                // Removed getActivities and getHealthMetrics as data is now stuffed in context
+                // No tools needed - ProtocolAI is purely analytical
             },
         });
 

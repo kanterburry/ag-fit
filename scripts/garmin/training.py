@@ -37,13 +37,32 @@ def sync_training_status(garmin_client, supabase_client):
             print("  -> No training status data")
             return
         
-        # Get VO2 Max data
-        week_ago = (date.today() - timedelta(days=7)).isoformat()
-        vo2_max = None
-        try:
-            vo2_max = garmin_client.get_max_metrics(today)
-        except:
-            pass
+        # Extract VO2 Max from training status (already fetched above)
+        vo2_max_running = None
+        vo2_max_cycling = None
+        
+        # The training_status response contains mostRecentVO2Max field
+        if 'mostRecentVO2Max' in training_status and training_status['mostRecentVO2Max']:
+            vo2_data = training_status['mostRecentVO2Max']
+            
+            # VO2 max can be structured in different ways
+            if isinstance(vo2_data, dict):
+                # Check for generic (running) VO2 max
+                if 'generic' in vo2_data:
+                    vo2_max_running = vo2_data['generic'].get('value')
+                elif 'value' in vo2_data:
+                    vo2_max_running = vo2_data['value']
+                    
+                # Check for cycling VO2 max
+                if 'cycling' in vo2_data:
+                    vo2_max_cycling = vo2_data['cycling'].get('value')
+            elif isinstance(vo2_data, (int, float)):
+                # Simple numeric value
+                vo2_max_running = vo2_data
+                
+            print(f"  -> VO2 Max - Running: {vo2_max_running}, Cycling: {vo2_max_cycling}")
+        else:
+            print(f"  -> No VO2 Max data available (user may need qualifying GPS+HR activities)")
         
         # Get Lactate Threshold
         lactate_threshold = None
@@ -81,8 +100,8 @@ def sync_training_status(garmin_client, supabase_client):
             "fitness_age": fitness_age_data.get('fitnessAge') if fitness_age_data else None,
             "lactate_threshold_bpm": lactate_threshold.get('lactateThresholdHeartRate') if lactate_threshold else None,
             "lactate_threshold_speed": lactate_threshold.get('lactateThresholdSpeed') if lactate_threshold else None,
-            "vo2_max_running": vo2_max.get('generic', {}).get('vo2MaxValue') if vo2_max else None,
-            "vo2_max_cycling": vo2_max.get('cycling', {}).get('vo2MaxValue') if vo2_max else None,
+            "vo2_max_running": vo2_max_running,
+            "vo2_max_cycling": vo2_max_cycling,
             "endurance_score": endurance_score.get('enduranceScore') if endurance_score and isinstance(endurance_score, dict) else None,
             "heat_acclimation": training_status.get('heatAcclimation'),
             "altitude_acclimation": training_status.get('altitudeAcclimation'),

@@ -30,6 +30,13 @@ export default function SyncButton({ showLabel = false, className = "" }: SyncBu
         setLoading(true);
         try {
             const res = await fetch('/api/sync/garmin', { method: 'POST' });
+
+            if (res.status === 401) {
+                // Determine upgrade path or just login
+                router.push('/login?next=/dashboard');
+                return;
+            }
+
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Sync failed');
 
@@ -40,6 +47,9 @@ export default function SyncButton({ showLabel = false, className = "" }: SyncBu
             router.refresh();
         } catch (e: any) {
             console.error('Sync Error:', e);
+            if (e.message.includes('Unauthorized')) {
+                router.push('/login?next=/dashboard');
+            }
         } finally {
             setLoading(false);
         }

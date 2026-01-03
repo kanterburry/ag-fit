@@ -70,7 +70,7 @@ export async function createProtocol(data: CreateProtocolInput) {
     redirect('/dashboard')
 }
 
-export async function createProtocolFromTemplate(templateId: string) {
+export async function createProtocolFromTemplate(templateId: string, habits?: string[]) {
     const supabase = await createClient()
     const { data: { user }, error: userError } = await supabase.auth.getUser()
 
@@ -97,7 +97,8 @@ export async function createProtocolFromTemplate(templateId: string) {
             title: template.title,
             description: template.description,
             hypothesis: template.hypothesis,
-            status: 'active'
+            status: 'active',
+            habits: habits || [] // Store habits
         })
         .select()
         .single()
@@ -163,4 +164,39 @@ export async function getUserProtocols() {
         .order('created_at', { ascending: false })
 
     return protocols || []
+}
+
+export async function deleteProtocol(protocolId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { error: 'Unauthorized' }
+    }
+
+    // Verify ownership before deleting
+    const { data: protocol } = await supabase
+        .from('protocols')
+        .select('id')
+        .eq('id', protocolId)
+        .eq('user_id', user.id)
+        .single()
+
+    if (!protocol) {
+        return { error: 'Protocol not found or access denied' }
+    }
+
+    // Delete protocol (phases and logs will cascade delete due to foreign keys)
+    const { error } = await supabase
+        .from('protocols')
+        .delete()
+        .eq('id', protocolId)
+
+    if (error) {
+        console.error('Error deleting protocol:', error)
+        return { error: 'Failed to delete protocol' }
+    }
+
+    revalidatePath('/dashboard')
+    return { success: true }
 }
