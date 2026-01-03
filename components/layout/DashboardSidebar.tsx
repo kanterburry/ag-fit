@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Dumbbell, Calendar, History, User, Settings, Activity } from "lucide-react";
+import { Home, Dumbbell, Calendar, History, User, Settings, Activity, LogOut, FlaskConical } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
     { href: "/dashboard", label: "Overview", icon: Home },
+    { href: "/dashboard/protocols", label: "Protocols", icon: FlaskConical },
     { href: "/dashboard/workouts", label: "Workouts", icon: Dumbbell },
     { href: "/dashboard/calendar", label: "Calendar", icon: Calendar },
     { href: "/dashboard/activity", label: "History", icon: History },
@@ -81,7 +82,22 @@ export function DashboardSidebar() {
                         </Link>
                     );
                 })}
+                <button
+                    onClick={async () => {
+                        const { createClient } = await import("@/utils/supabase/client");
+                        const supabase = createClient();
+                        await supabase.auth.signOut();
+                        window.location.href = "/login";
+                    }}
+                    className="flex w-full items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:text-red-400 hover:bg-red-950/30 transition-all duration-200 group"
+                >
+                    <LogOut
+                        size={20}
+                        className="text-zinc-500 group-hover:text-red-400 transition-colors"
+                    />
+                    Sign Out
+                </button>
             </div>
-        </aside>
+        </aside >
     );
 }

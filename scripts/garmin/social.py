@@ -38,14 +38,16 @@ def sync_social(garmin_client, supabase_client):
         
         if all_challenges:
             for challenge in all_challenges:
-                supabase_client.table("garmin_challenges").upsert(challenge).execute()
-            print(f"  -> Synced {len(all_challenges)} challenges")
+                # Skip if name is None/empty
+                if challenge.get('name'):
+                    supabase_client.table("garmin_challenges").upsert(challenge).execute()
+            print(f"  -> Synced {len([c for c in all_challenges if c.get('name')])} challenges")
     except Exception as e:
         print(f"  -> Challenges: {e}")
     
     # Sync Goals (active, future, past)
     try:
-        active_goals = garmin_client.get_goals(status='active', start=0, limit=100)
+        active_goals = garmin_client.get_goals(status='active', start=1, limit=100)
         future_goals = garmin_client.get_goals(status='future', start=0, limit=100)
         
         all_goals = []
@@ -66,8 +68,10 @@ def sync_social(garmin_client, supabase_client):
         
         if all_goals:
             for goal in all_goals:
-                supabase_client.table("garmin_goals").upsert(goal).execute()
-            print(f"  -> Synced {len(all_goals)} goals")
+                # Skip if name is None/empty
+                if goal.get('name'):
+                    supabase_client.table("garmin_goals").upsert(goal).execute()
+            print(f"  -> Synced {len([g for g in all_goals if g.get('name')])} goals")
     except Exception as e:
         print(f"  -> Goals: {e}")
     

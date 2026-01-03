@@ -11,6 +11,7 @@ from garmin.activities import sync_activities
 from garmin.gear import sync_gear
 from garmin.wellness import sync_wellness
 from garmin.social import sync_social
+from garmin.body_battery import sync_body_battery
 from garmin.config import validate_config
 
 class GarminBridge:
@@ -38,6 +39,11 @@ class GarminBridge:
                 sync_weight(self.garmin, self.supabase, d)
             except Exception as e:
                 print(f"Failed to sync weight for {d}: {e}")
+            
+            try:
+                sync_body_battery(self.garmin, self.supabase, d)
+            except Exception as e:
+                print(f"Failed to sync body battery for {d}: {e}")
         
         # Sync wellness data (respiration, SpO2, BP, pregnancy)
         try:
@@ -73,7 +79,7 @@ class GarminBridge:
         except Exception as e:
             print(f"Failed to sync gear: {e}")
         
-        print("✅ Garmin sync completed!")
+        print("Garmin sync completed!")
 
 if __name__ == "__main__":
     try:

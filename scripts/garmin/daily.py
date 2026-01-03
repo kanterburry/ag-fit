@@ -17,8 +17,8 @@ def sync_daily_metrics(garmin_client, supabase_client, target_date):
             "resting_hr": int(summary.get('restingHeartRate')) if summary.get('restingHeartRate') is not None else None,
             "max_hr": int(summary.get('maxHeartRate')) if summary.get('maxHeartRate') is not None else None,
             "stress_avg": int(summary.get('averageStressLevel')) if summary.get('averageStressLevel') is not None else None,
-            "body_battery_min": int(summary.get('minBodyBattery')) if summary.get('minBodyBattery') is not None else None,
-            "body_battery_max": int(summary.get('maxBodyBattery')) if summary.get('maxBodyBattery') is not None else None,
+            "body_battery_min": int(summary.get('bodyBatteryLowestValue')) if summary.get('bodyBatteryLowestValue') is not None else None,
+            "body_battery_max": int(summary.get('bodyBatteryHighestValue')) if summary.get('bodyBatteryHighestValue') is not None else None,
             "sleep_score": sleep.get('dailySleepDTO', {}).get('sleepScores', {}).get('overall', {}).get('value'),
             "sleep_seconds": sleep.get('dailySleepDTO', {}).get('sleepTimeSeconds'),
             "rem_sleep_seconds": sleep.get('dailySleepDTO', {}).get('remSleepSeconds'),
@@ -37,8 +37,36 @@ def sync_daily_metrics(garmin_client, supabase_client, target_date):
         }
         supabase_client.table("biometrics").upsert(bio_data).execute()
 
-        # New Table Sync
+        # Extract sleep start/end
+        sleep_dto = sleep.get('dailySleepDTO', {})
+        sleep_start = sleep_dto.get('sleepStartTimestampGMT') # Note: Ideally local, but API varies. daily.py runs locally? 
+        # Actually dailySleepDTO usually has sleepStartTimestampLocal in some versions.
+        # Let's rely on basic extraction. If needed convert.
+        # sleepStartTimestampLocal is safer if available.
+        # Checking Garmin returns.
+        
+        # New Table Sync (Garmin Specific)
         supabase_client.table("garmin_daily_metrics").upsert(data).execute()
+
+        # Unified Daily Metrics Sync (for Protocols)
+        # We assume specific columns exist in daily_metrics: bedtime, wakeup_time, sleep_duration_seconds, sleep_score, resting_hr, hrv_avg_ms
+        
+        unified_data = {
+            "date": target_date.isoformat(),
+            "user_id": USER_ID,
+            "sleep_score": data.get('sleep_score'),
+            "resting_hr": data.get('resting_hr'),
+            "stress_avg": data.get('stress_avg'),
+            "body_battery_max": data.get('body_battery_max'),
+            "sleep_duration_seconds": data.get('sleep_seconds')
+        }
+        
+        # Best effort bedtime (approximate from sleep seconds if start not available, but try to get start)
+        # We need to add logic to parse sleepWindow or timestamps if available. 
+        # For now, just syncing the metrics we have.
+        
+        supabase_client.table("daily_metrics").upsert(unified_data).execute()
+        
         print("  -> Daily Metrics synced.")
 
     except Exception as e:

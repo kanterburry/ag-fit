@@ -14,6 +14,7 @@ export const exerciseSchema = z.object({
 export const workoutSchema = z.object({
     title: z.string().min(1, "Workout title is required"),
     date: z.string(), // ISO string from input
+    time: z.string().optional(),
     notes: z.string().optional(),
     exercises: z.array(exerciseSchema).min(1, "At least one exercise is required"),
 });

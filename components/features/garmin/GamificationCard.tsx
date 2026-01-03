@@ -17,6 +17,7 @@ interface GamificationCardProps {
             goalId: string;
             name: string;
             type: string;
+            status: string;
             targetValue?: number;
             currentValue?: number;
             endDate?: string;

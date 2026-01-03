@@ -59,33 +59,8 @@ export function WellnessCard({ data }: WellnessCardProps) {
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-                {/* Hydration */}
-                {data.hydrationLiters !== undefined && (
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Droplets className="h-4 w-4" />
-                            <span>Hydration</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <div className="text-2xl font-bold">{data.hydrationLiters.toFixed(1)}L</div>
-                            {data.hydrationGoalLiters && (
-                                <div className="text-sm text-muted-foreground">
-                                    / {data.hydrationGoalLiters.toFixed(1)}L goal
-                                </div>
-                            )}
-                        </div>
-                        {data.hydrationGoalLiters && (
-                            <div className="w-full bg-muted rounded-full h-2">
-                                <div
-                                    className="bg-blue-600 h-2 rounded-full transition-all"
-                                    style={{
-                                        width: `${Math.min((data.hydrationLiters / data.hydrationGoalLiters) * 100, 100)}%`
-                                    }}
-                                />
-                            </div>
-                        )}
-                    </div>
-                )}
+                {/* Hydration Removed */
+                /* data.hydrationLiters !== undefined && ( ... ) */}
 
                 {/* Blood Pressure */}
                 {(data.bloodPressureSystolic || data.bloodPressureDiastolic) && (
@@ -122,7 +97,7 @@ export function WellnessCard({ data }: WellnessCardProps) {
                             <span>Blood Oxygen (SpO2)</span>
                         </div>
                         <div className={`text-2xl font-bold ${getSpo2Color(data.avgSpo2Percentage)}`}>
-                            {data.avgSpo2Percentage.toFixed(1)}%
+                            {data.avgSpo2Percentage?.toFixed(1) ?? '0.0'}%
                         </div>
                     </div>
                 )}
@@ -138,14 +113,14 @@ export function WellnessCard({ data }: WellnessCardProps) {
                             {data.avgWakingBreathsPerMinute && (
                                 <div className="bg-muted/50 p-2 rounded">
                                     <div className="text-xs text-muted-foreground">Waking</div>
-                                    <div className="text-lg font-bold">{data.avgWakingBreathsPerMinute.toFixed(1)}</div>
+                                    <div className="text-lg font-bold">{data.avgWakingBreathsPerMinute?.toFixed(1) ?? '0.0'}</div>
                                     <div className="text-xs text-muted-foreground">breaths/min</div>
                                 </div>
                             )}
                             {data.avgSleepingBreathsPerMinute && (
                                 <div className="bg-muted/50 p-2 rounded">
                                     <div className="text-xs text-muted-foreground">Sleeping</div>
-                                    <div className="text-lg font-bold">{data.avgSleepingBreathsPerMinute.toFixed(1)}</div>
+                                    <div className="text-lg font-bold">{data.avgSleepingBreathsPerMinute?.toFixed(1) ?? '0.0'}</div>
                                     <div className="text-xs text-muted-foreground">breaths/min</div>
                                 </div>
                             )}

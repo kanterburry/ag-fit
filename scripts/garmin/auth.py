@@ -38,7 +38,7 @@ def login_garmin():
         print("Logging in to Garmin Connect...")
         garmin = Garmin()  # No email/password - use tokens only
         garmin.login(garminconnect_dir)
-        print("✅ Login successful using stored tokens.")
+        print("SUCCESS: Login successful using stored tokens.")
         return garmin
     except Exception as token_error:
         print(f"Token login failed: {token_error}")
@@ -49,7 +49,7 @@ def login_garmin():
             try:
                 garmin = Garmin(GARMIN_EMAIL, GARMIN_PASS)
                 garmin.login(garminconnect_dir)
-                print("✅ Login successful using credentials.")
+                print("SUCCESS: Login successful using credentials.")
                 return garmin
             except Exception as cred_error:
                 print(f"Credential login also failed: {cred_error}")

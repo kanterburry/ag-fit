@@ -28,13 +28,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased pb-20 bg-background text-foreground`}
+        suppressHydrationWarning
       >
         <AuthProvider>
           <main className="min-h-screen pb-20 md:pb-0">{children}</main>
-          <CoachWidget />
+          {/* CoachWidget removed to avoid duplicate functionality */}
         </AuthProvider>
       </body>
     </html>
