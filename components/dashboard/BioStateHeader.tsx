@@ -38,30 +38,36 @@ export default async function BioStateHeader() {
                 </div>
             </div>
 
-            {/* Reliability Score */}
+            {/* Reliability (Adherence) Score */}
             <div className="relative overflow-hidden group rounded-2xl bg-zinc-900/50 border border-zinc-800 p-4 flex flex-col items-center justify-center gap-2 cursor-help transition-colors hover:bg-zinc-900/80">
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent pointer-events-none" />
                 <div className="flex items-center gap-2 text-emerald-400">
                     <TrendingUp className="w-5 h-5" />
-                    <span className="text-xs font-mono uppercase tracking-wider">Reliability</span>
+                    <span className="text-xs font-mono uppercase tracking-wider">Adherence</span>
                 </div>
                 <span className="text-3xl font-bold text-white font-mono">{metrics.reliability}%</span>
 
                 {/* Tooltip */}
                 <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-48 p-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 shadow-xl">
                     <p className="font-bold text-zinc-300 mb-1">Consistency Metric</p>
-                    <p>(Total Logs / Days Since Start) × 100</p>
+                    <p>(Total Logged Days / Total Days) × 100</p>
                 </div>
             </div>
 
             {/* Active Streak */}
-            <div className="relative overflow-hidden rounded-2xl bg-zinc-900/50 border border-zinc-800 p-4 flex flex-col items-center justify-center gap-2">
+            <div className="relative overflow-hidden group rounded-2xl bg-zinc-900/50 border border-zinc-800 p-4 flex flex-col items-center justify-center gap-2 cursor-help">
                 <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent pointer-events-none" />
                 <div className="flex items-center gap-2 text-amber-500">
                     <Zap className="w-5 h-5" />
                     <span className="text-xs font-mono uppercase tracking-wider">Streak</span>
                 </div>
                 <span className="text-3xl font-bold text-white font-mono">{metrics.streak} <span className="text-sm text-zinc-500">days</span></span>
+
+                {/* Tooltip (Added) */}
+                <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-48 p-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 shadow-xl">
+                    <p className="font-bold text-zinc-300 mb-1">Consistency Streak</p>
+                    <p>Consecutive days you have logged *any* protocol activity.</p>
+                </div>
             </div>
         </div>
     );

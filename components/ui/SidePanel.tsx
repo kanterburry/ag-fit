@@ -20,9 +20,10 @@ interface SidePanelProps {
     title: string;
     children: ReactNode;
     side?: "left" | "right";
+    contentClassName?: string;
 }
 
-export function SidePanel({ isOpen, onClose, title, children, side = "right" }: SidePanelProps) {
+export function SidePanel({ isOpen, onClose, title, children, side = "right", contentClassName }: SidePanelProps) {
     return (
         <AnimatePresence>
             {isOpen && (
@@ -33,7 +34,7 @@ export function SidePanel({ isOpen, onClose, title, children, side = "right" }: 
                         animate={{ opacity: 0.5 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm"
+                        className="fixed inset-0 z-[90] bg-black/80 backdrop-blur-sm"
                     />
 
                     {/* Drawer */}
@@ -43,11 +44,11 @@ export function SidePanel({ isOpen, onClose, title, children, side = "right" }: 
                         exit={{ x: side === "right" ? "100%" : "-100%" }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
                         className={cn(
-                            "fixed inset-y-0 z-50 flex w-full flex-col bg-surface sm:w-[500px] border-l border-slate-800 shadow-2xl",
+                            "fixed inset-y-0 z-[100] flex w-full flex-col bg-surface sm:w-[500px] border-l border-slate-800 shadow-2xl",
                             side === "right" ? "right-0" : "left-0"
                         )}
                     >
-                        <div className="flex items-center justify-between border-b border-slate-800 p-4">
+                        <div className="flex items-center justify-between border-b border-slate-800 p-4 shrink-0">
                             <h2 className="text-xl font-bold text-white">{title}</h2>
                             <button
                                 onClick={onClose}
@@ -57,7 +58,7 @@ export function SidePanel({ isOpen, onClose, title, children, side = "right" }: 
                             </button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto bg-background p-4">
+                        <div className={cn("flex-1 overflow-y-auto bg-background p-4", contentClassName)}>
                             {children}
                         </div>
                     </motion.div>

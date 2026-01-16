@@ -12,6 +12,8 @@ from garmin.gear import sync_gear
 from garmin.wellness import sync_wellness
 from garmin.social import sync_social
 from garmin.body_battery import sync_body_battery
+from garmin.smart_logger import check_smart_logging
+from garmin.reliability_engine import run_reliability_check
 from garmin.config import validate_config
 
 class GarminBridge:
@@ -78,6 +80,14 @@ class GarminBridge:
             sync_gear(self.garmin, self.supabase)
         except Exception as e:
             print(f"Failed to sync gear: {e}")
+
+        # Run Smart Logging (Passive Protocol Auto-Verification)
+        print("\n--- Starting Smart Logging (Bio-Auditor) ---")
+        for i in range(3):
+            d = today - timedelta(days=i)
+            check_smart_logging(self.garmin, self.supabase, d)
+            run_reliability_check(self.supabase, d)
+
         
         print("Garmin sync completed!")
 

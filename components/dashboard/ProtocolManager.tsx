@@ -1,10 +1,11 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import DailyCheckInCard from './DailyCheckInCard'
 import { Card, CardContent } from '@/components/ui/card'
 import { Activity, ClipboardList, ChevronLeft, ChevronRight } from 'lucide-react'
 import useEmblaCarousel from 'embla-carousel-react'
+import { cn } from '@/lib/utils'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function ProtocolManager({ protocolDataList }: { protocolDataList: any[] }) {
@@ -15,13 +16,32 @@ export function ProtocolManager({ protocolDataList }: { protocolDataList: any[] 
         dragFree: false
     })
 
-    const scrollPrev = useCallback(() => {
-        if (emblaApi) emblaApi.scrollPrev()
-    }, [emblaApi])
+    const [prevBtnDisabled, setPrevBtnDisabled] = useState(true)
+    const [nextBtnDisabled, setNextBtnDisabled] = useState(true)
+    const [selectedIndex, setSelectedIndex] = useState(0)
+    const [scrollSnaps, setScrollSnaps] = useState<number[]>([])
 
-    const scrollNext = useCallback(() => {
-        if (emblaApi) emblaApi.scrollNext()
-    }, [emblaApi])
+    const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi])
+    const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi])
+    const scrollTo = useCallback((index: number) => emblaApi && emblaApi.scrollTo(index), [emblaApi])
+
+    const onSelect = useCallback((emblaApi: any) => {
+        setSelectedIndex(emblaApi.selectedScrollSnap())
+        setPrevBtnDisabled(!emblaApi.canScrollPrev())
+        setNextBtnDisabled(!emblaApi.canScrollNext())
+    }, [])
+
+    const onInit = useCallback((emblaApi: any) => {
+        setScrollSnaps(emblaApi.scrollSnapList())
+    }, [])
+
+    useEffect(() => {
+        if (!emblaApi) return
+
+        onInit(emblaApi)
+        onSelect(emblaApi)
+        emblaApi.on('reInit', onInit).on('reInit', onSelect).on('select', onSelect)
+    }, [emblaApi, onInit, onSelect])
 
     // Deduplicate protocols by Title
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -65,25 +85,7 @@ export function ProtocolManager({ protocolDataList }: { protocolDataList: any[] 
             <div className="flex items-center justify-between px-1">
                 <h2 className="text-xl font-bold tracking-tight">Summary</h2>
 
-                {/* Navigation Buttons */}
-                {uniqueProtocols.length > 1 && (
-                    <div className="flex gap-2">
-                        <button
-                            onClick={scrollPrev}
-                            className="p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
-                            aria-label="Previous protocol"
-                        >
-                            <ChevronLeft className="w-5 h-5" />
-                        </button>
-                        <button
-                            onClick={scrollNext}
-                            className="p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
-                            aria-label="Next protocol"
-                        >
-                            <ChevronRight className="w-5 h-5" />
-                        </button>
-                    </div>
-                )}
+                {/* Navigation Buttons (Removed for cleaner UI, use Dots) */}
             </div>
 
             {/* Embla Carousel */}
@@ -93,7 +95,7 @@ export function ProtocolManager({ protocolDataList }: { protocolDataList: any[] 
                     {uniqueProtocols.map((protocolData: any, index: number) => (
                         <div
                             key={protocolData.protocol.id}
-                            className="flex-[0_0_100%] min-w-0 md:flex-[0_0_45%] lg:flex-[0_0_30%] xl:flex-[0_0_22%]"
+                            className="flex-[0_0_100%] min-w-0"
                         >
                             <DailyCheckInCard
                                 protocolData={protocolData}
@@ -103,6 +105,25 @@ export function ProtocolManager({ protocolDataList }: { protocolDataList: any[] 
                     ))}
                 </div>
             </div>
+
+            {/* Dots Indicator */}
+            {uniqueProtocols.length > 1 && (
+                <div className="flex justify-center gap-2 pt-2">
+                    {scrollSnaps.map((_, index) => (
+                        <button
+                            key={index}
+                            className={cn(
+                                "w-2 h-2 rounded-full transition-all duration-300",
+                                index === selectedIndex
+                                    ? "bg-indigo-500 w-6" // Active pill
+                                    : "bg-zinc-800 hover:bg-zinc-700"
+                            )}
+                            onClick={() => scrollTo(index)}
+                            aria-label={`Go to slide ${index + 1}`}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     )
 }

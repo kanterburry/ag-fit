@@ -22,6 +22,7 @@ import { BodyBatteryCard } from "./BodyBatteryCard"
 
 import { Suspense } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
+import SyncButton from "@/components/dashboard/SyncButton"
 
 async function GarminStats() {
     // Fetch all data in parallel
@@ -47,12 +48,15 @@ async function GarminStats() {
         getGarminChallengesAndGoals()
     ])
 
-    const lastSync = daily?.created_at ? new Date(daily.created_at).toLocaleString() : 'Never'
-
     return (
         <div className="space-y-6">
-            <div className="flex justify-end">
-                <span className="text-xs text-zinc-600 font-mono">Last Synced: {lastSync}</span>
+            <div className="flex justify-end items-center gap-2">
+                {daily?.updated_at && (
+                    <span className="text-[10px] text-zinc-500 font-mono">
+                        Last Sync: {new Date(daily.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                )}
+                <SyncButton showLabel className="text-xs" />
             </div>
 
             {/* Core Health Metrics - First Row */}

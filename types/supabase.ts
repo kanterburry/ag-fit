@@ -318,6 +318,7 @@ export type Database = {
                     description: string | null
                     hypothesis: string | null
                     id: string
+                    protocol_type: Database["public"]["Enums"]["protocol_type_enum"]
                     status: string | null
                     title: string
                     updated_at: string | null
@@ -328,6 +329,7 @@ export type Database = {
                     description?: string | null
                     hypothesis?: string | null
                     id?: string
+                    protocol_type?: Database["public"]["Enums"]["protocol_type_enum"]
                     status?: string | null
                     title: string
                     updated_at?: string | null
@@ -338,6 +340,7 @@ export type Database = {
                     description?: string | null
                     hypothesis?: string | null
                     id?: string
+                    protocol_type?: Database["public"]["Enums"]["protocol_type_enum"]
                     status?: string | null
                     title?: string
                     updated_at?: string | null
@@ -353,7 +356,7 @@ export type Database = {
             [_ in never]: never
         }
         Enums: {
-            [_ in never]: never
+            protocol_type_enum: "PASSIVE" | "ACTIVE" | "HYBRID"
         }
         CompositeTypes: {
             [_ in never]: never

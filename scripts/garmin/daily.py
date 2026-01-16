@@ -66,6 +66,7 @@ def sync_daily_metrics(garmin_client, supabase_client, target_date):
         # For now, just syncing the metrics we have.
         
         supabase_client.table("daily_metrics").upsert(unified_data).execute()
+        # print("  -> Unified Daily Metrics skipped (table missing).")
         
         print("  -> Daily Metrics synced.")
 

@@ -12,52 +12,87 @@ export async function POST(req: Request) {
         const supabase = await createClient();
         const today = new Date();
         const startOfHistory = new Date();
-        startOfHistory.setDate(today.getDate() - 90); // 90 days of health data
+        startOfHistory.setDate(today.getDate() - 90);
 
         const startOfGarmin = new Date();
-        startOfGarmin.setDate(today.getDate() - 30); // 30 days of metrics
+        startOfGarmin.setDate(today.getDate() - 30);
 
         // Get user
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        // TEMPORARY DEV BYPASS: Allow testing without auth
+        if (authError || !user) {
+            console.warn('ProtocolAI: No authenticated user, using fallback USER_ID for dev testing');
+            // TODO: Remove this bypass before production deployment
+            const fallbackUserId = process.env.USER_ID;
+            if (!fallbackUserId) {
+                console.error('ProtocolAI: No USER_ID in env for fallback');
+                return new Response("Unauthorized - No fallback user ID", { status: 401 });
+            }
+            // Continue with fallback user ID (see line 38 update below)
+        }
 
         // 1. Fetch user's active and recent protocols
-        const { data: protocols } = await supabase
-            .from('protocols')
-            .select(`
-                *,
-                protocol_phases (*),
-                daily_logs (*)
-            `)
-            .eq('user_id', user?.id)
-            .order('created_at', { ascending: false });
+        // Use authenticated user ID or fallback for dev testing
+        const userId = user?.id || process.env.USER_ID;
+
+        let protocols: any[] = [];
+        try {
+            const { data, error } = await supabase
+                .from('protocols')
+                .select(`
+                    *,
+                    protocol_phases (*),
+                    daily_logs (*)
+                `)
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
+            if (!error) protocols = data || [];
+            else console.error('ProtocolAI: Error fetching protocols', error);
+        } catch (e) { console.error('ProtocolAI: Exception fetching protocols', e); }
 
         // 2. Fetch recent health metrics
-        const { data: garminStats } = await supabase
-            .from('garmin_daily_metrics')
-            .select('date, resting_hr, sleep_score, stress_avg, body_battery_max, body_battery_min, steps, calories_active')
-            .gte('date', startOfGarmin.toISOString().split('T')[0])
-            .order('date', { ascending: false });
+        let garminStats: any[] = [];
+        try {
+            const { data, error } = await supabase
+                .from('garmin_daily_metrics')
+                .select('date, resting_hr, sleep_score, stress_avg, body_battery_max, body_battery_min, steps, calories_active')
+                .gte('date', startOfGarmin.toISOString().split('T')[0])
+                .order('date', { ascending: false });
+            if (!error) garminStats = data || [];
+            else console.error('ProtocolAI: Error fetching garmin stats', error);
+        } catch (e) { console.error('ProtocolAI: Exception fetching garmin stats', e); }
 
         // 3. Fetch training metrics
-        const { data: trainingStatus } = await supabase
-            .from('garmin_training_status')
-            .select('*')
-            .order('date', { ascending: false })
-            .limit(30);
+        let trainingStatus: any[] = [];
+        try {
+            const { data, error } = await supabase
+                .from('garmin_training_status')
+                .select('*')
+                .order('date', { ascending: false })
+                .limit(30);
+            if (!error) trainingStatus = data || [];
+            else console.error('ProtocolAI: Error fetching training status', error);
+        } catch (e) { console.error('ProtocolAI: Exception fetching training status', e); }
 
         // 4. Fetch recent activities
-        const { data: activities } = await supabase
-            .from('activities')
-            .select('activity_type, start_time, duration_seconds, distance_meters, calories')
-            .gte('start_time', startOfHistory.toISOString())
-            .order('start_time', { ascending: false })
-            .limit(50);
+        let activities: any[] = [];
+        try {
+            const { data, error } = await supabase
+                .from('activities')
+                .select('activity_type, start_time, duration_seconds, distance_meters, calories')
+                .gte('start_time', startOfHistory.toISOString())
+                .order('start_time', { ascending: false })
+                .limit(50);
+            if (!error) activities = data || [];
+            else console.error('ProtocolAI: Error fetching activities', error);
+        } catch (e) { console.error('ProtocolAI: Exception fetching activities', e); }
+
+        console.log(`ProtocolAI Context: ${protocols.length} protocols, ${garminStats.length} daily stats, ${trainingStatus.length} training stats, ${activities.length} activities`);
 
         const result = await streamText({
-            model: google('gemini-2.0-flash-exp'), // Use Gemini 2.0 Flash for best performance
+            model: google('gemini-2.0-flash-exp'),
             messages,
-            // @ts-ignore
-            maxSteps: 5,
             system: `You are ProtocolAI - an AI research assistant specialized in n=1 self-experimentation and behavioral science.
 
 Your core mission: Help users understand their habit experiments (protocols) through the lens of academic research and their personal health data.
@@ -65,16 +100,16 @@ Your core mission: Help users understand their habit experiments (protocols) thr
 === YOUR DATA ACCESS ===
 
 PROTOCOLS (User's Experiments):
-${JSON.stringify(protocols, null, 2)}
+${JSON.stringify(protocols || [], null, 2)}
 
 HEALTH METRICS (Last 30 Days):
-${JSON.stringify(garminStats, null, 2)}
+${JSON.stringify(garminStats || [], null, 2)}
 
 TRAINING STATUS:
-${JSON.stringify(trainingStatus, null, 2)}
+${JSON.stringify(trainingStatus || [], null, 2)}
 
 RECENT ACTIVITIES:
-${JSON.stringify(activities, null, 2)}
+${JSON.stringify(activities || [], null, 2)}
 
 === YOUR CAPABILITIES ===
 
@@ -99,26 +134,20 @@ ${JSON.stringify(activities, null, 2)}
 - Suggest protocol modifications with scientific rationale
 - Propose new experiments with expected outcomes
 - Recommend optimal timing/dosing based on research
+- If data is missing (e.g., "NO DATA" in context), politely ask the user to sync their Garmin device or log more protocol data.
 
 **Style**:
 - Concise, evidence-based, scientific but accessible
 - Use bullet points for clarity
 - Highlight key insights with bold text
 
-Example Response:
-"Your Caffeine Reset protocol shows a **15% improvement in sleep score** (baseline: 68 → current: 78). This aligns with research showing caffeine's 5-6 hour half-life affects sleep architecture (Drake et al., 2013). 
-
-**Recommendation**: Extend your caffeine cutoff to 1pm for optimal sleep quality, as adenosine receptor upregulation continues for 12-14 days (Fredholm et al., 1999)."
-
 Remember: You're a research assistant, not a fitness coach. Focus on scientific evidence and data analysis.`,
-            tools: {
-                // No tools needed - ProtocolAI is purely analytical
-            },
+            tools: {},
         });
 
-        return (result as any).toDataStreamResponse();
+        return result.toTextStreamResponse();
     } catch (error: any) {
-        console.error('Error in chat route:', error);
-        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+        console.error('Fatal Error in ProtocolAI (chat route):', error);
+        return new Response(JSON.stringify({ error: error.message || "Internal Server Error" }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
 }

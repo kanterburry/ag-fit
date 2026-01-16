@@ -318,46 +318,67 @@ export async function getCommandCenterStats() {
         .eq('user_id', user.id)
         .eq('status', 'completed')
 
-    // 1b. Protocols Active (Unique Count)
-    const { data: activeRows } = await supabase
+    // 2. Reliability (Adherence) & Streak
+    // Strategy: Fetch ALL logs and active protocols to do math in JS (cheaper than complex SQL for now)
+
+    // Fetch active protocols to calculate their individual adherence
+    const { data: activeProtocolsData } = await supabase
         .from('protocols')
-        .select('title')
+        .select('id, created_at')
         .eq('user_id', user.id)
         .eq('status', 'active')
 
-    const activeProtocols = activeRows ? new Set(activeRows.map(r => r.title)).size : 0
-
-    // 2. Reliability Score (Consistency)
-    // Formula: (Total Logs / Days Since First Log) * 100
-    // Fetch all logs
+    // Fetch all daily logs for calculation
     const { data: logs } = await supabase
         .from('daily_logs')
-        .select('date')
+        .select('date, protocol_id')
         .eq('user_id', user.id)
         .order('date', { ascending: true })
 
+    const activeProtocolCount = activeProtocolsData?.length || 0
     let reliabilityScore = 0
-    let activeStreak = 0
 
-    if (logs && logs.length > 0) {
-        const firstLogDate = new Date(logs[0].date)
+    // New Adherence Formula: Average of (Each Active Protocol's Adherence)
+    if (activeProtocolsData && activeProtocolsData.length > 0) {
+        let totalAdherenceSum = 0
         const today = new Date()
-        const totalDays = Math.max(1, Math.floor((today.getTime() - firstLogDate.getTime()) / (1000 * 60 * 60 * 24)) + 1)
 
-        reliabilityScore = Math.round((logs.length / totalDays) * 100)
-        reliabilityScore = Math.min(100, reliabilityScore) // Cap at 100
+        activeProtocolsData.forEach(p => {
+            const startDate = new Date(p.created_at)
+            // Days since start (minimum 1)
+            const daysSinceStart = Math.max(1, Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1)
 
-        // Streak Calc
+            // Logs for THIS protocol
+            const protocolLogCount = logs?.filter(l => l.protocol_id === p.id).length || 0
+
+            const pAdherence = Math.min(100, (protocolLogCount / daysSinceStart) * 100)
+            totalAdherenceSum += pAdherence
+        })
+
+        // Average across all active protocols
+        reliabilityScore = Math.round(totalAdherenceSum / activeProtocolsData.length)
+    } else {
+        // Fallback if no active protocols: Global consistency over last 30 days? 
+        // Or just keep 0? Let's keep 0 as "No Active Adherence".
+        reliabilityScore = 0
+    }
+
+    // Streak Calc (Global for ANY protocol)
+    let activeStreak = 0
+    if (logs && logs.length > 0) {
         let currentStreak = 0
+        // Get unique dates where ANY log happened
         const logDates = new Set(logs.map(l => l.date))
+
         for (let i = 0; i < 365; i++) {
             const d = new Date()
             d.setDate(d.getDate() - i)
             const dateStr = d.toISOString().split('T')[0]
+
             if (logDates.has(dateStr)) {
                 currentStreak++
             } else if (i === 0 && !logDates.has(dateStr)) {
-                // today not logged yet, don't break streak if yesterday was logged
+                // Today not logged yet, don't break streak if yesterday was logged
                 continue
             } else {
                 break
@@ -368,7 +389,7 @@ export async function getCommandCenterStats() {
 
     return {
         completedProtocols: completedProtocols || 0,
-        activeProtocols: activeProtocols || 0,
+        activeProtocols: activeProtocolCount,
         reliabilityScore,
         activeStreak
     }

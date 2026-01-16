@@ -112,8 +112,9 @@ export const PROTOCOL_TEMPLATES: ProtocolTemplate[] = [
                 metricType: 'time',
                 icon: 'moon'
             },
-            { key: 'hrv', label: 'HRV', source: 'automated', metricType: 'number', suffix: 'ms', icon: 'activity' },
-            { key: 'recovery_score', label: 'Recovery', source: 'automated', metricType: 'number', suffix: '%', icon: 'activity' }
+            { key: 'sleep_duration_seconds', label: 'Duration', source: 'automated', metricType: 'time', suffix: 'h', icon: 'moon' },
+            { key: 'sleep_score', label: 'Sleep Score', source: 'automated', metricType: 'number', suffix: '%', icon: 'activity' },
+            { key: 'hrv_avg_ms', label: 'HRV', source: 'automated', metricType: 'number', suffix: 'ms', icon: 'activity' }
         ],
         studies: [
             'https://pubmed.ncbi.nlm.nih.gov/31130584/',

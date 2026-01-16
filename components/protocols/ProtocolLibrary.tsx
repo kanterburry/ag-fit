@@ -151,11 +151,11 @@ export function ProtocolLibrary({ userProtocols }: Props) {
                                     <div className="flex justify-between items-center pt-2 mt-auto">
                                         <span className="text-xs text-zinc-500">Ends in {daysLeft} days</span>
                                         <Button
-                                            onClick={() => window.location.href = '/dashboard'}
+                                            onClick={() => window.location.href = `/dashboard/protocols/${p.id}`}
                                             size="sm"
                                             className="h-8 bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 border border-emerald-600/30"
                                         >
-                                            View Dashboard <ArrowRight className="ml-1.5 h-3 w-3" />
+                                            View Details <ArrowRight className="ml-1.5 h-3 w-3" />
                                         </Button>
                                     </div>
                                 </div>
@@ -170,6 +170,9 @@ export function ProtocolLibrary({ userProtocols }: Props) {
                     const Icon = ICON_MAP[template.icon] || Activity
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const isRunning = activeProtocols.some((p: any) => p.title === template.title)
+
+                    // User Feedback: Hide specific active protocols from the library view
+                    if (isRunning) return null
 
                     return (
                         <Card key={template.id} className={`border-slate-800 bg-slate-900/50 transition-colors flex flex-col ${isRunning ? 'border-emerald-500/50 bg-emerald-900/10' : 'hover:border-primary/50'}`}>
