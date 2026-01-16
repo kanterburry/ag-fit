@@ -9,10 +9,9 @@ import QuickLogDrawer from "./QuickLogDrawer"
 export default function QuickLogButton({ protocols }: { protocols: any[] }) {
     const [isOpen, setIsOpen] = useState(false)
 
-    // Only show if there are protocols to log
-    const hasPendingLogs = protocols.some(p => !p.todayLog && p.protocol.status === 'active')
-
-    if (!hasPendingLogs && !isOpen) return null
+    // Always show in navbar for consistent UI
+    // const hasPendingLogs = protocols.some(p => !p.todayLog && p.protocol.status === 'active')
+    // if (!hasPendingLogs && !isOpen) return null
 
     return (
         <>

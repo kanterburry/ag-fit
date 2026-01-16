@@ -6,20 +6,29 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function getURL() {
-    // 1. Prioritize explicitly defined APP_URL
+    // 1. Prioritize APP_URL
     let url = process?.env?.NEXT_PUBLIC_APP_URL || '';
 
-    // 2. Fallback to Vercel's automatic URL if in production/preview
+    // 2. Fallback to Vercel's URL
     if (!url && process?.env?.NEXT_PUBLIC_VERCEL_URL) {
         url = `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
     }
 
-    // 3. Last fallback for local development or browser-side without env vars
-    if (!url) {
-        url = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000/';
+    // 3. Fallback to window.location.origin
+    if (!url && typeof window !== 'undefined') {
+        url = window.location.origin;
     }
 
-    // Make sure to include a trailing `/`.
+    // 4. Last fallback
+    if (!url) {
+        url = 'http://localhost:3000/';
+    }
+
+    // Ensure it doesn't accidentally point to localhost in production browser
+    if (typeof window !== 'undefined' && url.includes('localhost') && !window.location.origin.includes('localhost')) {
+        url = window.location.origin;
+    }
+
     url = url.endsWith('/') ? url : `${url}/`;
     return url;
 }

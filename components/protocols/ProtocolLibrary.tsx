@@ -49,41 +49,39 @@ export function ProtocolLibrary({ userProtocols }: Props) {
             return
         }
         // User Feedback: Skip the lifestyle logging flow as it's redundant
-        setSelectedTemplateForConfig(templateId)
-        handleFinalLaunch([]) // Call directly with empty habits
+        // Instead of setting state which triggers UI, we call launch directly
+        handleLaunchProcess(templateId, [])
     }
 
-    const handleFinalLaunch = async (habits: string[]) => {
-        if (!selectedTemplateForConfig) return
+    const handleLaunchProcess = async (templateId: string, habits: string[]) => {
+        const template = PROTOCOL_TEMPLATES.find(t => t.id === templateId)
+        if (!template) return
 
         try {
-            setLaunchingId(selectedTemplateForConfig)
-            // TODO: Pass habits to the start function (Need to update server action first)
-            // For now, we will store them later or pass them if action supports it. 
-            // Checking action signature... it only takes templateId. 
-            // We need to UPDATE the server action to accept habits.
-            // For this step, let's just proceed with launch and log habits to console/localstorage as placeholder?
-            // BETTER: Let's assume we'll update the action in next step.
-
-            const result = await createProtocolFromTemplate(selectedTemplateForConfig, habits)
+            setLaunchingId(templateId)
+            const result = await createProtocolFromTemplate(templateId, habits)
 
             if (result?.error) {
                 if (result.error === 'Unauthorized' || result.error.includes('Unauthorized')) {
-                    window.location.href = '/login?next=/dashboard/protocols'
+                    window.location.href = `/login?next=/dashboard/protocols`
                     return
                 }
                 setError(result.error)
-                setLaunchingId(null)
-                setSelectedTemplateForConfig(null)
             } else if (result?.success) {
-                // Success! Redirect to dashboard
                 window.location.href = '/dashboard'
             }
         } catch (e) {
             console.error('Launch error:', e)
             setError('An unexpected error occurred')
+        } finally {
             setLaunchingId(null)
             setSelectedTemplateForConfig(null)
+        }
+    }
+
+    const handleFinalLaunch = (habits: string[]) => {
+        if (selectedTemplateForConfig) {
+            handleLaunchProcess(selectedTemplateForConfig, habits)
         }
     }
 
