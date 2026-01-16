@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
+import { getURL } from '@/lib/utils'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
@@ -34,10 +35,10 @@ export async function GET(request: Request) {
                 }
             }
 
-            return NextResponse.redirect(`${origin}${next}`)
+            return NextResponse.redirect(`${getURL()}${next.startsWith('/') ? next.slice(1) : next}`)
         }
     }
 
     // return the user to an error page with instructions
-    return NextResponse.redirect(`${origin}/auth/auth-code-error`)
+    return NextResponse.redirect(`${getURL()}auth/auth-code-error`)
 }

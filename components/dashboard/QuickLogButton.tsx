@@ -18,10 +18,10 @@ export default function QuickLogButton({ protocols }: { protocols: any[] }) {
         <>
             <Button
                 onClick={() => setIsOpen(true)}
-                className="rounded-xl shadow-lg bg-indigo-600 hover:bg-indigo-500 text-white px-4 h-14 flex gap-2 items-center animate-in zoom-in duration-300 border border-indigo-400/30"
+                className="rounded-xl shadow-lg bg-indigo-600 hover:bg-indigo-500 text-white px-3 sm:px-4 h-10 sm:h-12 flex gap-1.5 sm:gap-2 items-center animate-in zoom-in duration-300 border border-indigo-400/30"
             >
-                <Plus className="w-5 h-5" />
-                <span className="text-sm font-bold tracking-wide">LOG</span>
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline text-xs sm:text-sm font-bold tracking-wide">LOG</span>
             </Button>
 
             <QuickLogDrawer

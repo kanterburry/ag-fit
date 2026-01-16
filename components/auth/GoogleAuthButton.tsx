@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
+import { getURL } from '@/lib/utils'
 import { User } from '@supabase/supabase-js'
 import { LogOut, LogIn } from 'lucide-react'
 
@@ -31,7 +32,7 @@ export default function GoogleAuthButton() {
         await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: `${location.origin}/auth/callback`,
+                redirectTo: `${getURL()}auth/callback`,
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'consent',
