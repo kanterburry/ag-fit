@@ -48,8 +48,9 @@ export function ProtocolLibrary({ userProtocols }: Props) {
             window.location.href = '/dashboard'
             return
         }
-        // Open Behavior Selector
+        // User Feedback: Skip the lifestyle logging flow as it's redundant
         setSelectedTemplateForConfig(templateId)
+        handleFinalLaunch([]) // Call directly with empty habits
     }
 
     const handleFinalLaunch = async (habits: string[]) => {

@@ -14,9 +14,9 @@ export function getURL() {
         url = `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
     }
 
-    // 3. Last fallback for local development
+    // 3. Last fallback for local development or browser-side without env vars
     if (!url) {
-        url = 'http://localhost:3000/';
+        url = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000/';
     }
 
     // Make sure to include a trailing `/`.
