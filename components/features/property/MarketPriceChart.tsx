@@ -39,7 +39,7 @@ export function MarketPriceChart({ hdbData, uraData }: Props) {
 
     return (
         <ResponsiveContainer width="100%" height="100%">
-            <BarChart pdata={chartData} data={chartData}>
+            <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" fontSize={12} />
                 <YAxis fontSize={12} tickFormatter={(value) => `$${value / 1000}k`} />
