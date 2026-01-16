@@ -6,6 +6,7 @@ import DashboardActions from "@/components/dashboard/DashboardActions"
 
 export function DashboardHeader({ protocols = [] }: { protocols?: any[] }) {
     const pathname = usePathname()
+    console.log('[DashboardHeader] Protocols count:', protocols?.length, protocols);
 
     // Simple breadcrumb or title logic
     const getTitle = () => {

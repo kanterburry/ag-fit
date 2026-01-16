@@ -10,6 +10,7 @@ export default function QuickLogButton({ protocols }: { protocols: any[] }) {
     const [isOpen, setIsOpen] = useState(false)
 
     // Always show in navbar for consistent UI
+    console.log('[QuickLogButton] Component mounted, protocols:', protocols?.length);
     // const hasPendingLogs = protocols.some(p => !p.todayLog && p.protocol.status === 'active')
     // if (!hasPendingLogs && !isOpen) return null
 

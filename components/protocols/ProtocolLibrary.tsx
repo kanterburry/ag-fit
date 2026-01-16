@@ -41,6 +41,7 @@ export function ProtocolLibrary({ userProtocols }: Props) {
     const pastProtocols = userProtocols.filter((p: any) => p.status !== 'active')
 
     const initiateLaunch = (templateId: string) => {
+        console.log('[ProtocolLibrary] initiateLaunch for template:', templateId);
         // Check if THIS protocol is already active
         const template = PROTOCOL_TEMPLATES.find(t => t.id === templateId)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -48,18 +49,21 @@ export function ProtocolLibrary({ userProtocols }: Props) {
             window.location.href = '/dashboard'
             return
         }
+
         // User Feedback: Skip the lifestyle logging flow as it's redundant
         // Instead of setting state which triggers UI, we call launch directly
         handleLaunchProcess(templateId, [])
     }
 
     const handleLaunchProcess = async (templateId: string, habits: string[]) => {
+        console.log('[ProtocolLibrary] handleLaunchProcess start. template:', templateId, 'habits:', habits);
         const template = PROTOCOL_TEMPLATES.find(t => t.id === templateId)
         if (!template) return
 
         try {
             setLaunchingId(templateId)
             const result = await createProtocolFromTemplate(templateId, habits)
+            console.log('[ProtocolLibrary] launch result:', result);
 
             if (result?.error) {
                 if (result.error === 'Unauthorized' || result.error.includes('Unauthorized')) {
@@ -68,6 +72,7 @@ export function ProtocolLibrary({ userProtocols }: Props) {
                 }
                 setError(result.error)
             } else if (result?.success) {
+                // Success! Redirect to dashboard
                 window.location.href = '/dashboard'
             }
         } catch (e) {
@@ -86,11 +91,9 @@ export function ProtocolLibrary({ userProtocols }: Props) {
     }
 
     if (selectedTemplateForConfig) {
-        // Import dynamically or strictly? BehaviorSelector is imported above? No, need to import it.
-        // Let's assume imports will be added at top.
         return (
             <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-                {/* Behavior Selector Wrapper */}
+                {/* Behavior Selector Wrapper (Legacy support if needed, but we skip it now) */}
                 <div className="w-full max-w-lg">
                     <BehaviorSelector
                         onBack={() => setSelectedTemplateForConfig(null)}
