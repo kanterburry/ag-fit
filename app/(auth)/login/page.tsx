@@ -11,10 +11,13 @@ export default function LoginPage() {
     const handleLogin = async () => {
         setIsLoading(true);
         const supabase = createClient();
+        const redirectUrl = `${getURL()}auth/callback`;
+        console.log('[LoginPage] Initiating sign-in with redirectTo:', redirectUrl);
+
         await supabase.auth.signInWithOAuth({
             provider: "google",
             options: {
-                redirectTo: `${getURL()}auth/callback`,
+                redirectTo: redirectUrl,
             },
         });
     };

@@ -26,7 +26,12 @@ export function getURL() {
     // 3. Final fallback
     if (!url) {
         url = 'http://localhost:3000/';
-        console.log('[getURL] Server-side final fallback:', url);
+    }
+
+    // CRITICAL: If we are in the browser and on a non-localhost domain, 
+    // never allow getURL to return localhost.
+    if (typeof window !== 'undefined' && url.includes('localhost') && !window.location.origin.includes('localhost')) {
+        url = window.location.origin;
     }
 
     url = url.endsWith('/') ? url : `${url}/`;
