@@ -28,8 +28,8 @@ export default async function DashboardPage() {
     return (
         <div className="min-h-screen bg-black text-white p-6 pb-24 space-y-8">
             <div className="lg:col-span-2 space-y-6">
-                {/* Dashboard Actions (Sticky Header) */}
-                <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50">
+                {/* Dashboard Actions (Sticky Header) - Repositioned to avoid top-right profile on mobile */}
+                <div className="fixed bottom-24 right-4 sm:absolute sm:top-6 sm:right-6 sm:bottom-auto z-50">
                     <DashboardActions protocols={protocolDataList} />
                 </div>
 
