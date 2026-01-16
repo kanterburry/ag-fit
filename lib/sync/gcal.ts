@@ -1,11 +1,26 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/config";
-import { sql } from "@/lib/db";
+import { createClient } from "@/utils/supabase/server";
 
 export async function syncGCalEvents() {
-    const session = await getServerSession(authOptions);
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (!session?.accessToken) {
+    if (!user) {
+        throw new Error("Unauthorized");
+    }
+
+    // Fetch Google tokens from DB
+    const { data: tokens, error: tokenError } = await supabase
+        .from('google_calendar_tokens')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+    if (tokenError || !tokens) {
+        throw new Error("No connected Google account found");
+    }
+
+    const accessToken = tokens.access_token;
+    if (!accessToken) {
         throw new Error("No access token found");
     }
 
@@ -18,7 +33,7 @@ export async function syncGCalEvents() {
         `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${timeMin}&timeMax=${timeMax}&q=BFT&singleEvents=true`,
         {
             headers: {
-                Authorization: `Bearer ${session.accessToken}`,
+                Authorization: `Bearer ${accessToken}`,
             },
         }
     );
@@ -38,7 +53,7 @@ export async function syncGCalEvents() {
         // For now, let's just format them
         if (event.summary?.toLowerCase().includes("bft") || event.description?.toLowerCase().includes("bft")) {
             syncedEvents.push({
-                user_id: session.user?.email || "unknown", // Using email as ID proxy for MVP if sub not mapped
+                user_id: user.id, // Using the actual user ID from Supabase
                 date: event.start.dateTime || event.start.date,
                 type: "bft",
                 source: "gcal",

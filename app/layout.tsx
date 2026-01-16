@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
-import { Header } from "@/components/layout/Header";
-import { AuthProvider } from "@/components/providers/AuthProvider";
 import CoachWidget from "@/components/features/coach/CoachWidget";
 import "./globals.css";
 
@@ -33,10 +31,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased pb-20 bg-background text-foreground`}
         suppressHydrationWarning
       >
-        <AuthProvider>
-          <main className="min-h-screen pb-20 md:pb-0">{children}</main>
-          {/* CoachWidget removed to avoid duplicate functionality */}
-        </AuthProvider>
+        <main className="min-h-screen pb-20 md:pb-0">{children}</main>
+        {/* CoachWidget removed to avoid duplicate functionality */}
       </body>
     </html>
   );

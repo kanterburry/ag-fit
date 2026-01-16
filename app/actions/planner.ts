@@ -1,19 +1,19 @@
 "use server";
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/config";
-import { sql } from "@/lib/db";
+import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { sql } from "@/lib/db";
 
 export async function commitSchedule(scheduleData: Record<string, any>) {
     try {
-        const session = await getServerSession(authOptions);
-        // Secure ID retrieval (using the same logic we fixed in Analysis page)
-        const userId = (session?.user as any)?.id || (session?.user as any)?.sub;
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
 
-        if (!userId) {
+        if (!user) {
             return { success: false, message: "Unauthorized" };
         }
+
+        const userId = user.id;
 
         // 1. Calculate dates for the *Current* week (starting Monday)
         // If today is Sunday, we might want next week? Let's stick to "Current Week" for simplicity 

@@ -10,12 +10,17 @@ export function getURL() {
     if (typeof window !== 'undefined') {
         const origin = window.location.origin;
         console.log('[getURL] Client-side detected origin:', origin);
+
+        // EXTRA HARDENING: If we are in the browser but NOT on localhost, 
+        // ensure we never return a localhost URL derived from env vars.
         return origin.endsWith('/') ? origin : `${origin}/`;
     }
 
     // 1. Prioritize APP_URL (Server-side)
     let url = process?.env?.NEXT_PUBLIC_APP_URL || '';
-    console.log('[getURL] Server-side APP_URL:', url);
+    if (url) {
+        console.log('[getURL] Server-side APP_URL:', url);
+    }
 
     // 2. Fallback to Vercel's URL
     if (!url && process?.env?.NEXT_PUBLIC_VERCEL_URL) {
@@ -28,12 +33,7 @@ export function getURL() {
         url = 'http://localhost:3000/';
     }
 
-    // CRITICAL: If we are in the browser and on a non-localhost domain, 
-    // never allow getURL to return localhost.
-    if (typeof window !== 'undefined' && url.includes('localhost') && !window.location.origin.includes('localhost')) {
-        url = window.location.origin;
-    }
-
     url = url.endsWith('/') ? url : `${url}/`;
     return url;
 }
+
